@@ -24,9 +24,9 @@ target_include_directories(bcbcontroller PRIVATE ${Qt5Core_INCLUDE_DIRS})
 target_include_directories(bcbcontroller PRIVATE ${Qt5Svg_INCLUDE_DIRS})
 
 target_compile_definitions(bcbcontroller
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION=${SOURCE_VERSION}>
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT=${SOURCE_COMMIT}>
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY=${SOURCE_DIRTY}>
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT="${SOURCE_COMMIT}">
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY="${SOURCE_DIRTY}">
 )
 
 target_link_libraries(bcbcontroller Qt5::Core)
@@ -36,6 +36,7 @@ target_link_libraries(bcbcontroller Qt5::Widgets)
 target_link_libraries(bcbcontroller Qt5::OpenGL)
 target_link_libraries(bcbcontroller Qt5::PrintSupport)
 target_link_libraries(bcbcontroller Qt5Svg)
+target_link_libraries(bcbcontroller Qt5Coap)
 target_link_libraries(bcbcontroller ${CMAKE_THREAD_LIBS_INIT})
 
 include(GNUInstallDirs)

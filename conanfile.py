@@ -38,6 +38,7 @@ class BCBControllerDesktopConan(ConanFile):
     def requirements(self):
         self.requires("qt/5.14.2@bincrafters/stable")
         self.requires("qtsvg/5.14.2@blixt/stable")
+        self.requires("qtcoap/5.14.2@blixt/stable")
 
     def _configure_cmake(self):
         if not self._cmake:
@@ -63,6 +64,15 @@ class BCBControllerDesktopConan(ConanFile):
         else:
             raise ConanException("Packaging is not supported for %s" % self.settings.os)
 
+    def deploy(self):
+        if self.settings.os == "Linux":
+            self._deploy_linux()
+        else:
+            raise ConanException("Deploying is not supported for %s" % self.settings.os)
+
     def _package_linux(self):
         self.copy("*", dst="app.dir", src="app.dir")
         self.copy("*", dst=os.path.join("app.dir", "usr", "bin"), src="bin")
+
+    def _deploy_linux(self):
+        self.copy("*", dst="app.dir", src="app.dir")

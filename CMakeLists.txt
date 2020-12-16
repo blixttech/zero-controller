@@ -36,6 +36,8 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS PrintSupport REQUIRED)
 find_package(Qt5 COMPONENTS Concurrent REQUIRED)
+find_package(Qt5Svg REQUIRED)
+find_package(Qt5Coap REQUIRED)
 find_package(Threads REQUIRED)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
