@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=bk710-tool
+Type=Application
+Terminal=false
+Exec=bk710-tool
+Icon=bk710-tool
+Categories=Utility;
+Comment=A desktop application for BK710 digital thermometer

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/ui-style">
+        <file>ui-style.qss</file>
+    </qresource>
+</RCC>

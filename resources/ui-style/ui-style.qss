@@ -1,0 +1,16 @@
+
+QPushButton[objectName = "relButton"][relative=true] {
+    background-color:#808080;
+}
+
+QPushButton[objectName = "holdButton"][hold=true] {
+    background-color:#808080;
+}
+
+QLabel[objectName="t1Label"][ol=true] {
+    color:#FF0000;
+}
+
+QLabel[objectName="t2Label"][ol=true] {
+    color:#FF0000;
+}
