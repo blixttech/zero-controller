@@ -8,10 +8,10 @@ from conans.errors import ConanException
 
 
 class BCBControllerDesktopConan(ConanFile):
-    name = "bcb-controller-desktop"
+    name = "bcbcontroller-desktop"
     description = "Desktop application for controlling Blixt Circuit Breaker"
-    url = "https://github.com/blixttech/bcb-controller-desktop"
-    homepage = "https://github.com/blixttech/bcb-controller-desktop"
+    url = "https://github.com/blixttech/bcbcontroller-desktop"
+    homepage = "https://github.com/blixttech/bcbcontroller-desktop"
     license = "GPL-3.0-only"
 
     exports_sources = ["src/*", "app.dir/*", "resources/*", "CMakeLists.txt"]
