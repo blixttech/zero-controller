@@ -25,7 +25,7 @@ else
     pip install conan --upgrade
 fi
 
-conan remote add bincreators https://api.bintray.com/conan/bincreators/public-conan
+conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
 conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 
 if [ ! -d "${build_dir}" ]; then
@@ -33,4 +33,4 @@ if [ ! -d "${build_dir}" ]; then
 fi
 
 conan create "${project_dir}" demo/testing
-conan install --install-folder "${build_dir}" bk710-tool/master@demo/testing
+conan install --install-folder "${build_dir}" demo/testing

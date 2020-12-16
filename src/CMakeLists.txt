@@ -1,4 +1,4 @@
-set (BK710_TOOL_SOURCES_GUI
+set (BCBCONTROLLER_SOURCES
     mainwindow.cpp
     bk710appgui.cpp
     main.cpp
@@ -7,35 +7,40 @@ set (BK710_TOOL_SOURCES_GUI
 
 if(MSVC)
     # This is a GUI application without the console
-    add_executable(bk710-tool WIN32 ${BK710_TOOL_SOURCES_GUI})
+    add_executable(bcbcontroller WIN32 ${BCBCONTROLLER_SOURCES})
 else()
-    add_executable(bk710-tool ${BK710_TOOL_SOURCES_GUI})
+    add_executable(bcbcontroller ${BCBCONTROLLER_SOURCES})
 endif()
 
-set_property(TARGET bk710-tool PROPERTY OUTPUT_NAME "bk710-tool")
-set_property(TARGET bk710-tool PROPERTY AUTOMOC ON)
-set_property(TARGET bk710-tool PROPERTY AUTOUIC ON)
-set_property(TARGET bk710-tool PROPERTY AUTORCC ON)
-set_property(TARGET bk710-tool PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
-set_property(TARGET bk710-tool PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET bcbcontroller PROPERTY OUTPUT_NAME "bcbcontroller")
+set_property(TARGET bcbcontroller PROPERTY AUTOMOC ON)
+set_property(TARGET bcbcontroller PROPERTY AUTOUIC ON)
+set_property(TARGET bcbcontroller PROPERTY AUTORCC ON)
+set_property(TARGET bcbcontroller PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
+set_property(TARGET bcbcontroller PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_include_directories(bk710-tool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(bk710-tool PRIVATE ${Qt5Core_INCLUDE_DIRS})
-target_include_directories(bk710-tool PRIVATE ${Qt5SerialPort_INCLUDE_DIRS})
-target_include_directories(bk710-tool PRIVATE ${Qwt_INCLUDE_DIRS})
+target_include_directories(bcbcontroller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(bcbcontroller PRIVATE ${Qt5Core_INCLUDE_DIRS})
+target_include_directories(bcbcontroller PRIVATE ${Qt5Svg_INCLUDE_DIRS})
 
-target_link_libraries(bk710-tool Qt5::Core)
-target_link_libraries(bk710-tool Qt5::Concurrent)
-target_link_libraries(bk710-tool Qt5::Gui)
-target_link_libraries(bk710-tool Qt5::Widgets)
-target_link_libraries(bk710-tool Qt5::OpenGL)
-target_link_libraries(bk710-tool Qt5::PrintSupport)
-target_link_libraries(bk710-tool Qt5Svg)
-target_link_libraries(bk710-tool ${CMAKE_THREAD_LIBS_INIT})
+target_compile_definitions(bcbcontroller
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION=${SOURCE_VERSION}>
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT=${SOURCE_COMMIT}>
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY=${SOURCE_DIRTY}>
+)
+
+target_link_libraries(bcbcontroller Qt5::Core)
+target_link_libraries(bcbcontroller Qt5::Concurrent)
+target_link_libraries(bcbcontroller Qt5::Gui)
+target_link_libraries(bcbcontroller Qt5::Widgets)
+target_link_libraries(bcbcontroller Qt5::OpenGL)
+target_link_libraries(bcbcontroller Qt5::PrintSupport)
+target_link_libraries(bcbcontroller Qt5Svg)
+target_link_libraries(bcbcontroller ${CMAKE_THREAD_LIBS_INIT})
 
 include(GNUInstallDirs)
 
-install(TARGETS bk710-tool 
+install(TARGETS bcbcontroller 
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

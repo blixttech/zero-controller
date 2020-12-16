@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=bk710-tool
+Name=bcbcontroller
 Type=Application
 Terminal=false
-Exec=bk710-tool
-Icon=bk710-tool
+Exec=bcbcontroller
+Icon=bcbcontroller
 Categories=Utility;
-Comment=A desktop application for BK710 digital thermometer
+Comment=A desktop application for controlling Blixt Circuit Breaker

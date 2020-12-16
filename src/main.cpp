@@ -29,7 +29,7 @@ void customMessageOutput(QtMsgType type, const QMessageLogContext& context, cons
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(customMessageOutput);
-    Bk710AppGui app(argc, argv);
+    ControllerAppGui app(argc, argv);
 
     return app.exec();
 }

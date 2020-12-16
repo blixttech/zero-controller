@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import pathlib
+import re
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanException
 
@@ -11,6 +12,7 @@ class BCBControllerDesktopConan(ConanFile):
     description = "Desktop application for controlling Blixt Circuit Breaker"
     url = "https://github.com/blixttech/bcb-controller-desktop"
     homepage = "https://github.com/blixttech/bcb-controller-desktop"
+    license = "GPL-3.0-only"
 
     exports_sources = ["src/*", "app.dir/*", "resources/*", "CMakeLists.txt"]
     generators = "cmake", "virtualrunenv"
@@ -41,12 +43,10 @@ class BCBControllerDesktopConan(ConanFile):
         if not self._cmake:
             self._cmake = CMake(self)
             self._cmake.definitions["USE_CONAN_BUILD_INFO"] = "ON"
-            del self._cmake.definitions["CMAKE_EXPORT_NO_PACKAGE_REGISTRY"]
-            """
             self._cmake.definitions["SOURCE_VERSION"] = self.version
             self._cmake.definitions["SOURCE_COMMIT"] = self._git_commit
             self._cmake.definitions["SOURCE_DIRTY"] = self._git_is_dirty
-            """
+            del self._cmake.definitions["CMAKE_EXPORT_NO_PACKAGE_REGISTRY"]
             self._cmake.configure()
         return self._cmake
 

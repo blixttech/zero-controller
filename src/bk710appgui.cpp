@@ -7,7 +7,7 @@
 #include <QFile>
 #include <QDebug>
 
-class Bk710AppGui::PrivateData : QObject
+class ControllerAppGui::PrivateData : QObject
 {
 public:
     PrivateData(QObject *parent = nullptr) : QObject(parent)
@@ -39,9 +39,9 @@ public:
 
 };
 
-Bk710AppGui::Bk710AppGui(int& argc, char **argv) : QApplication(argc, argv)
+ControllerAppGui::ControllerAppGui(int& argc, char **argv) : QApplication(argc, argv)
 {
-    setApplicationName("BK710 Tool");
+    setApplicationName("BCB Controller");
     // Must create private data before processing command line arguments.
     pData_ = new PrivateData(this);
     processCmdArgs(argc, argv);
@@ -80,7 +80,7 @@ Bk710AppGui::Bk710AppGui(int& argc, char **argv) : QApplication(argc, argv)
     pData_->mainWindow->show();
 }
 
-Bk710AppGui::~Bk710AppGui()
+ControllerAppGui::~ControllerAppGui()
 {
     if (pData_ != NULL) {
         delete pData_;
@@ -88,7 +88,7 @@ Bk710AppGui::~Bk710AppGui()
     }
 }
 
-void Bk710AppGui::processCmdArgs(int& argc, char **argv)
+void ControllerAppGui::processCmdArgs(int& argc, char **argv)
 {
     QCommandLineParser parser;
 
@@ -102,18 +102,6 @@ void Bk710AppGui::processCmdArgs(int& argc, char **argv)
         "Log level \n 1:fatal, 2:critical, 3:warning, 4:info, 5:debug", "log-level");
     parser.addOption(logLevelOpt);
 
-    QCommandLineOption plotBufSizeOpt(QStringList() << "B" << "plot-buf-size", 
-        "Buffer size for the plot", "plot-buf-size");
-    parser.addOption(plotBufSizeOpt);
-
-    QCommandLineOption addDummyPltDataOpt(QStringList() << "P" << "add-dummy-plot-data", 
-        "Add dummy plot data");
-    parser.addOption(addDummyPltDataOpt);
-
-    QCommandLineOption addDummyTempDataOpt(QStringList() << "T" << "add-dummy-temp-data", 
-        "Add dummy temperature data");
-    parser.addOption(addDummyTempDataOpt);
-
     parser.process(*this);
 
     if (parser.isSet(cfgFileOpt)) {
@@ -125,7 +113,7 @@ void Bk710AppGui::processCmdArgs(int& argc, char **argv)
     }
 }
 
-void Bk710AppGui::applyStyles()
+void ControllerAppGui::applyStyles()
 {
     QFile uiStyleFile(":/ui-style/ui-style.qss" );
     uiStyleFile.open(QFile::ReadOnly);
