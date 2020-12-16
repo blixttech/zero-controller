@@ -1,4 +1,4 @@
-#include <bk710appgui.hpp>
+#include <controllerappgui.hpp>
 #include <QDateTime>
 
 void customMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)

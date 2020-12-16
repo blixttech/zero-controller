@@ -1,6 +1,6 @@
 set (BCBCONTROLLER_SOURCES
     mainwindow.cpp
-    bk710appgui.cpp
+    controllerappgui.cpp
     main.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
 )

@@ -1,4 +1,4 @@
-#include <bk710appgui.hpp>
+#include <controllerappgui.hpp>
 #include <common.hpp>
 #include <QString>
 #include <QVariant>
