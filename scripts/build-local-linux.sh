@@ -61,16 +61,16 @@ else
 fi
 
 if [ "${in_docker}" -eq 1 ]; then
-    build_dir="${project_dir}/build-local/build-docker"
-    package_dir="${project_dir}/build-local/package-docker"
+    build_dir="${project_dir}/build/docker"
+    package_dir="${project_dir}/package/docker"
 
     sudo pip install pip --upgrade
     sudo pip install conan
     conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
     conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 else
-    build_dir="${project_dir}/build-local/build"
-    package_dir="${project_dir}/build-local/package"
+    build_dir="${project_dir}/build/local"
+    package_dir="${project_dir}/package/local"
 fi
 
 export CONAN_SYSREQUIRES_MODE="enabled"

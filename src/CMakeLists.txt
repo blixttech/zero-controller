@@ -1,8 +1,8 @@
 set (BCBCONTROLLER_SOURCES
+    main.cpp
+    controllerapp.cpp
     mainwindow.cpp
     mainwindowui.cpp
-    controllerappgui.cpp
-    main.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )

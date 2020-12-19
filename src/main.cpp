@@ -1,4 +1,4 @@
-#include <controllerappgui.hpp>
+#include <controllerapp.hpp>
 #include <QDateTime>
 
 void customMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
