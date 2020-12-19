@@ -5,6 +5,20 @@ import pathlib
 import re
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanException
+from conans.client import generators
+from conans.client.run_environment import RunEnvironment
+from conans.client.tools.oss import OSInfo
+
+
+class CustomRunEnvGenerator(generators.VirtualRunEnvGenerator):
+
+    def __init__(self, conanfile):
+        super(CustomRunEnvGenerator, self).__init__(conanfile)
+        run_env = RunEnvironment(conanfile)
+        self.env = run_env.vars
+        os_info = OSInfo()
+        if os_info.is_posix:
+            self.env['FONTCONFIG_PATH'] = "/etc/fonts"
 
 
 class BCBControllerDesktopConan(ConanFile):
@@ -15,7 +29,7 @@ class BCBControllerDesktopConan(ConanFile):
     license = "GPL-3.0-only"
 
     exports_sources = ["src/*", "app.dir/*", "resources/*", "CMakeLists.txt"]
-    generators = "cmake", "virtualrunenv"
+    generators = "cmake", "CustomRunEnvGenerator"
 
     settings = "os", "compiler", "build_type", "arch"
 

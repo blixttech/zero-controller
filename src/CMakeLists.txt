@@ -1,8 +1,10 @@
 set (BCBCONTROLLER_SOURCES
     mainwindow.cpp
+    mainwindowui.cpp
     controllerappgui.cpp
     main.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
+    ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )
 
 if(MSVC)

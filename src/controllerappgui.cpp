@@ -7,7 +7,7 @@
 #include <QFile>
 #include <QDebug>
 
-class ControllerAppGui::PrivateData : QObject
+class ControllerApp::PrivateData : QObject
 {
 public:
     PrivateData(QObject *parent = nullptr) : QObject(parent)
@@ -39,9 +39,9 @@ public:
 
 };
 
-ControllerAppGui::ControllerAppGui(int& argc, char **argv) : QApplication(argc, argv)
+ControllerApp::ControllerApp(int& argc, char **argv) : QApplication(argc, argv)
 {
-    setApplicationName("BCB Controller");
+    setApplicationName("Blixt Circuit Breaker Controller");
     // Must create private data before processing command line arguments.
     pData_ = new PrivateData(this);
     processCmdArgs(argc, argv);
@@ -80,7 +80,7 @@ ControllerAppGui::ControllerAppGui(int& argc, char **argv) : QApplication(argc, 
     pData_->mainWindow->show();
 }
 
-ControllerAppGui::~ControllerAppGui()
+ControllerApp::~ControllerApp()
 {
     if (pData_ != NULL) {
         delete pData_;
@@ -88,7 +88,7 @@ ControllerAppGui::~ControllerAppGui()
     }
 }
 
-void ControllerAppGui::processCmdArgs(int& argc, char **argv)
+void ControllerApp::processCmdArgs(int& argc, char **argv)
 {
     QCommandLineParser parser;
 
@@ -113,7 +113,7 @@ void ControllerAppGui::processCmdArgs(int& argc, char **argv)
     }
 }
 
-void ControllerAppGui::applyStyles()
+void ControllerApp::applyStyles()
 {
     QFile uiStyleFile(":/ui-style/ui-style.qss" );
     uiStyleFile.open(QFile::ReadOnly);

@@ -1,28 +1,25 @@
 #include <mainwindow.hpp>
-#include <ui_mainwindow.h>
+#include <mainwindowui.hpp>
 
 class MainWindow::PrivateData : QObject
 {
 public:
-    PrivateData(Config* config, QObject* parent = nullptr) : QObject(parent)
+    PrivateData(Config *config, QObject *parent = nullptr) : QObject(parent)
     {
         this->config = config;
-        ui = new Ui::mainWindow();
+        this->ui = new MainWindowUI();
     }
 
     ~PrivateData()
     {
-        if (ui != NULL) {
-            delete ui;
-            ui = NULL;
-        }
+
     }
 
-    Ui::mainWindow* ui;
-    Config* config;
+    Config *config;
+    MainWindowUI *ui;
 };
 
-MainWindow::MainWindow(Config* config, QWidget *parent) : QWidget(parent)
+MainWindow::MainWindow(Config *config)
 {
     pData_ = new PrivateData(config, this);
     pData_->ui->setupUi(this);

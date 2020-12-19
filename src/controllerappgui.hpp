@@ -4,12 +4,12 @@
 #include <mainwindow.hpp>
 #include <QApplication>
 
-class ControllerAppGui: public QApplication
+class ControllerApp: public QApplication
 {
 
 public:
-    ControllerAppGui(int& argc, char **argv);
-    ~ControllerAppGui();
+    ControllerApp(int& argc, char **argv);
+    ~ControllerApp();
 
 private:
     void processCmdArgs(int& argc, char **argv);

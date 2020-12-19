@@ -2,7 +2,7 @@
 #define __MAIN_WINDOW_H__
 
 #include <common.hpp>
-#include <QWidget>
+#include <QMainWindow>
 #include <QString>
 
 namespace Ui
@@ -10,11 +10,11 @@ namespace Ui
 class mainWindow;
 }
 
-class MainWindow : public QWidget {
+class MainWindow : public QMainWindow {
 
     Q_OBJECT
 public:
-    MainWindow(Config* config, QWidget *parent = nullptr);
+    MainWindow(Config *config);
     ~MainWindow();
 
 private:

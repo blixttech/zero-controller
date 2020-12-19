@@ -23,16 +23,13 @@ for key in "${@}"; do
         -b|--build)
             do_build=1
         ;;
-
         -p|--package)
             do_package=1
         ;;
-
         -h|--help)
             echo "${script_usage}"
             exit 0
         ;;
-
         *)
             echo "ERROR: Unknown option '${key}'"
             echo "${script_usage}"
@@ -76,21 +73,21 @@ else
     package_dir="${project_dir}/build-local/package"
 fi
 
-if [ ! -d "${build_dir}" ]; then
-    mkdir -p "${build_dir}"
-fi
-
-if [ ! -d "${package_dir}" ]; then
-    mkdir -p "${package_dir}"
-fi
-
 export CONAN_SYSREQUIRES_MODE="enabled"
 
 if [ "${do_build}" -eq 1 ]; then
+    if [ ! -d "${build_dir}" ]; then
+        mkdir -p "${build_dir}"
+    fi
+
     conan install "${project_dir}" --install-folder "${build_dir}"
     conan build "${project_dir}" --build-folder "${build_dir}"
 
     if [ "${do_package}" -eq 1 ]; then
+        if [ ! -d "${package_dir}" ]; then
+            mkdir -p "${package_dir}"
+        fi
+
         conan package "${project_dir}" --build-folder "${build_dir}" --package-folder "${package_dir}"
     fi
 fi
