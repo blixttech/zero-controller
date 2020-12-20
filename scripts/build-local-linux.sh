@@ -7,21 +7,27 @@ script_file_base="${script_file_full%%.*}"
 script_dir=$(dirname "${script_file_full}")
 script_dir_full=$(readlink -f "${script_dir}")
 config_file_full="${script_file_base}.conf"
+project_dir=$(dirname $(readlink -f "${script_dir_full}"))
 
 script_usage="Usage: ${script_name_full} [OPTIONS]
 
 Options:
-  -b, --build       Build            
+  -b, --build       Build
+  -D, --debug       Debug build            
   -p, --package     Package
   -h, --help        Show this help
 "
 do_build=0
+debug_build=0
 do_package=0
 
 for key in "${@}"; do
     case "${key}" in
         -b|--build)
             do_build=1
+        ;;
+        -D|--debug)
+            debug_build=1
         ;;
         -p|--package)
             do_package=1
@@ -37,8 +43,6 @@ for key in "${@}"; do
         ;;
     esac
 done
-
-project_dir=$(dirname $(readlink -f "${script_dir_full}"))
 
 output=$(cd ${project_dir} && git rev-parse --is-inside-work-tree 2> /dev/null)
 if [ -z "${output}" ]; then
@@ -80,7 +84,13 @@ if [ "${do_build}" -eq 1 ]; then
         mkdir -p "${build_dir}"
     fi
 
-    conan install "${project_dir}" --install-folder "${build_dir}"
+    if [ "${debug_build}" -eq 1 ]; then
+        conan_profile="${project_dir}/conan/profile-linux-debug"
+    else
+        conan_profile="${project_dir}/conan/profile-linux-release"
+    fi
+
+    conan install "${project_dir}" --install-folder "${build_dir}" --profile "${conan_profile}"
     conan build "${project_dir}" --build-folder "${build_dir}"
 
     if [ "${do_package}" -eq 1 ]; then
