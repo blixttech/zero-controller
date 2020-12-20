@@ -22,18 +22,18 @@ The development workflow of this project centers on [Conan](https://conan.io/) a
 
 ### Build environment setup
     
-Assuming, Conda is already installed, 
+Assuming, [Conda](https://docs.conda.io/) is already installed, 
 
-```console
-$ # Create a Python environment for Conan 
-$ conda create --name conan python=3
-$ source activate conan
-(conan)$ # Now , we are in conan environment
-(conan)$ pip install pip --upgrade
-(conan)$ pip install conan
-(conan)$ # Adding required conan package repositories
-(conan)$ conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
-(conan)$ conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+```bash
+# Create a Python environment for Conan 
+conda create --name conan python=3 
+source activate conan
+# (conan)$ Now, we are in the "conan" conda environment
+pip install pip --upgrade
+pip install conan
+# Adding required conan package repositories
+conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 ```
 
 ### Building
@@ -57,20 +57,23 @@ Instead of using [Conan](https://conan.io/) commands, the helper script [build-l
 
 - Release
 
-    ```console
-    (conan)$ ./scripts/build-local-linux.sh -b
+    ```bash
+    # (conan)$ We are in the "conan" conda environment
+    ./scripts/build-local-linux.sh -b
     ```
 
 - Light debug
 
-    ```console
-    (conan)$ ./scripts/build-local-linux.sh -b -d
+    ```bash
+    # (conan)$ We are in the "conan" conda environment
+    ./scripts/build-local-linux.sh -b -d
     ```
 
 - Full debug
 
-    ```console
-    (conan)$ ./scripts/build-local-linux.sh -b -D
+    ```bash
+    # (conan)$ We are in the "conan" conda environment
+    ./scripts/build-local-linux.sh -b -D
     ```
 
 ### Running
@@ -78,15 +81,18 @@ Instead of using [Conan](https://conan.io/) commands, the helper script [build-l
 The [build-local-linux.sh](scripts/build-local-linux.sh) script creates a directory named ``build`` in the root directory of the project for build artifacts.
 Before running the final binary, dependent library paths and other environment variables can be set via Conan's [Virtual Environments](https://docs.conan.io/en/latest/mastering/virtualenv.html) feature as follows.
 
-```console
-(conan)$ source build/local/activate_run.sh
-(conanrunenv) (conan)$ ./build/local/bin/bcbcontroller
+```bash
+# (conan)$ We are in the "conan" conda environment
+source build/local/activate_run.sh
+# (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
+./build/local/bin/bcbcontroller
 ```
 
 As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the [build-local-linux.sh](scripts/build-local-linux.sh) script.
 Instead, ``make`` can be used as follows to rebuild if the dependencies, build steps and related environmental variables are not changed in the [conanfile.py](conanfile.py) file. 
 
-```console
-(conanrunenv) (conan)$ cd build/local
-(conanrunenv) (conan)$ make
+```bash
+# (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
+cd build/local
+make
 ```
