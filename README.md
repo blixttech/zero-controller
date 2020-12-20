@@ -1,8 +1,8 @@
-# A Desktop Application for Controlling Blixt Circuit Breaker(s)
+# Desktop Application for Controlling Blixt Zero
 
 ## Introduction
-This project provides a desktop application for controlling [Blixt Circuit Breaker(s)](https://blixt.tech/).
-The current generation of the circuit breaker, **Blixt Zero**, uses the [Constrained Application Protocol](https://tools.ietf.org/html/rfc7252) (CoAP) for controlling the devices remotely. 
+This project provides a desktop application for controlling [Blixt Zero](https://blixt.tech/) devices.
+Blixt Zero, uses the [Constrained Application Protocol](https://tools.ietf.org/html/rfc7252) (CoAP) for controlling the devices remotely. 
 
 **NOTE: This application is a work in progress. Therefore, features/functionalities are subjected for changes without prior notice.**
 
@@ -85,7 +85,7 @@ Before running the final binary, dependent library paths and other environment v
 # (conan)$ We are in the "conan" conda environment
 source build/local/activate_run.sh
 # (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
-./build/local/bin/bcbcontroller
+./build/local/bin/bzcontroller
 ```
 
 As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the [build-local-linux.sh](scripts/build-local-linux.sh) script.

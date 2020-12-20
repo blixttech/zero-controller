@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=bcbcontroller
-Type=Application
-Terminal=false
-Exec=bcbcontroller
-Icon=bcbcontroller
-Categories=Utility;
-Comment=A desktop application for controlling Blixt Circuit Breaker

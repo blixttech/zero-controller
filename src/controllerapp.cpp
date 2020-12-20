@@ -41,7 +41,7 @@ public:
 
 ControllerApp::ControllerApp(int& argc, char **argv) : QApplication(argc, argv)
 {
-    setApplicationName("Blixt Circuit Breaker Controller");
+    setApplicationName("Blixt Zero Controller");
     // Must create private data before processing command line arguments.
     pData_ = new PrivateData(this);
     processCmdArgs(argc, argv);
