@@ -12,10 +12,12 @@ project_dir=$(dirname $(readlink -f "${script_dir_full}"))
 script_usage="Usage: ${script_name_full} [OPTIONS]
 
 Options:
-  -b, --build       Build
-  -D, --debug       Debug build            
-  -p, --package     Package
-  -h, --help        Show this help
+  -b, --build           Build (default: release build)
+  -d, --debug-light     Light debug build
+                        (Only dependencies are release build)
+  -D, --debug-full      Full debug build            
+  -p, --package         Package
+  -h, --help            Show this help
 "
 do_build=0
 debug_build=0
@@ -26,8 +28,11 @@ for key in "${@}"; do
         -b|--build)
             do_build=1
         ;;
-        -D|--debug)
+        -d|--debug-light)
             debug_build=1
+        ;;
+        -D|--debug-full)
+            debug_build=2
         ;;
         -p|--package)
             do_package=1
@@ -85,7 +90,9 @@ if [ "${do_build}" -eq 1 ]; then
     fi
 
     if [ "${debug_build}" -eq 1 ]; then
-        conan_profile="${project_dir}/conan/profile-linux-debug"
+        conan_profile="${project_dir}/conan/profile-linux-debug-light"
+    elif [ "${debug_build}" -eq 2 ]; then
+        conan_profile="${project_dir}/conan/profile-linux-debug-full"
     else
         conan_profile="${project_dir}/conan/profile-linux-release"
     fi
