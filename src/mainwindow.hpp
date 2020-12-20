@@ -3,12 +3,6 @@
 
 #include <common.hpp>
 #include <QMainWindow>
-#include <QString>
-
-namespace Ui
-{
-class mainWindow;
-}
 
 class MainWindow : public QMainWindow {
 
