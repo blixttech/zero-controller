@@ -2,7 +2,7 @@
 
 ## Introduction
 This project provides a desktop application for controlling [Blixt Zero](https://blixt.tech/) devices.
-Blixt Zero, uses the [Constrained Application Protocol](https://tools.ietf.org/html/rfc7252) (CoAP) for controlling the devices remotely. 
+Blixt Zero uses the [Constrained Application Protocol](https://tools.ietf.org/html/rfc7252) (CoAP) for controlling the devices remotely. 
 
 **NOTE: This application is a work in progress. Therefore, features/functionalities are subjected for changes without prior notice.**
 
