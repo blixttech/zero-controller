@@ -1,7 +1,7 @@
 #ifndef __BK710_APP_GUI_H__
 #define __BK710_APP_GUI_H__
 
-#include <mainwindow.hpp>
+#include "mainwindow.hpp"
 #include <QApplication>
 
 class ControllerApp: public QApplication

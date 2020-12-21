@@ -1,5 +1,5 @@
-#include <controllerapp.hpp>
-#include <common.hpp>
+#include "controllerapp.hpp"
+#include "common.hpp"
 #include <QString>
 #include <QVariant>
 #include <QCommandLineParser>

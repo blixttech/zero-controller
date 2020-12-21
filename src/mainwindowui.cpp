@@ -1,5 +1,5 @@
-#include <mainwindowui.hpp>
-#include <qmainwindow.h>
+#include "mainwindowui.hpp"
+#include "qmainwindow.h"
 #include <QToolBar>
 #include <QIcon>
 #include <QStatusBar>

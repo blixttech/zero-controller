@@ -1,5 +1,5 @@
-#include <mainwindow.hpp>
-#include <mainwindowui.hpp>
+#include "mainwindow.hpp"
+#include "mainwindowui.hpp"
 
 class MainWindow::PrivateData : QObject
 {
