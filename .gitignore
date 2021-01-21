@@ -6,3 +6,4 @@ package
 
 # Files
 compile_commands.json
+*.swp
