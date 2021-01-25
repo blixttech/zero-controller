@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
 project (bzcontroller CXX)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
+
+set(CONAN_DISABLE_CHECK_COMPILER ON)
 
 if(NOT SET_UP_CONFIGURATIONS_DONE)
     set(SET_UP_CONFIGURATIONS_DONE TRUE)
@@ -36,6 +38,7 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS PrintSupport REQUIRED)
 find_package(Qt5 COMPONENTS Concurrent REQUIRED)
+find_package(Qt5 COMPONENTS Network REQUIRED)
 find_package(Qt5Svg REQUIRED)
 find_package(Qt5Coap REQUIRED)
 find_package(Threads REQUIRED)

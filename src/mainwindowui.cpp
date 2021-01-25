@@ -6,18 +6,14 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 
+namespace zero {
 
-MainWindowUI::MainWindowUI()
+MainWindowUI::MainWindowUI(QMainWindow* parent)
 {
-
+    setupUi(parent);
 }
 
-MainWindowUI::~MainWindowUI()
-{
-
-}
-
-void MainWindowUI::setupUi(QMainWindow *mainWindow)
+void MainWindowUI::setupUi(QMainWindow* mainWindow)
 {
     if (mainWindow->objectName().isEmpty())
         mainWindow->setObjectName(QString::fromUtf8("mainWindow"));
@@ -30,7 +26,7 @@ void MainWindowUI::setupUi(QMainWindow *mainWindow)
     mainWindow->setSizePolicy(sizePolicy);
     mainWindow->setMinimumSize(QSize(1024, 700));
 
-    this->centralWidget = new QWidget(mainWindow);
+    centralWidget = new QWidget(mainWindow);
     mainWindow->setCentralWidget(this->centralWidget);
 
     setupToolBar(mainWindow);
@@ -39,55 +35,69 @@ void MainWindowUI::setupUi(QMainWindow *mainWindow)
     mainWindow->statusBar()->showMessage(tr("Status Bar"));
 }
 
-void MainWindowUI::setupToolBar(QMainWindow *mainWindow)
+void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
 {
-    this->toolBar = mainWindow->addToolBar(tr("Common Functions"));
-    this->toolBar->setObjectName(QString::fromUtf8("toolBar"));
+    toolBar = mainWindow->addToolBar(tr("Common Functions"));
+    toolBar->setObjectName(QString::fromUtf8("toolBar"));
 
-    this->autoDiscoveryAction = new QAction(QIcon(":/icons/discovery.png"), tr("&Auto Discover Devices"), mainWindow);
-    this->autoDiscoveryAction->setObjectName(QString::fromUtf8("autoDiscoveryAction"));
-    this->autoDiscoveryAction->setStatusTip(tr("Auto Discover Devices"));
-    this->autoDiscoveryAction->setCheckable(true);
-    this->autoDiscoveryAction->setChecked(true);
-    toolBar->addAction(this->autoDiscoveryAction);
+    niSelect = new QLabel(QString::fromUtf8("Network"), toolBar);
+    toolBar->addWidget(niSelect);
+
+    networkInterfaceSelector = new QComboBox(toolBar);
+    networkInterfaceSelector->setObjectName(QString::fromUtf8("networkInterfaceSelector"));
+    networkInterfaceSelector->setStatusTip(tr("Select Network Interface"));
+    toolBar->addWidget(networkInterfaceSelector);
+
+    /*autoDiscoveryAction = new QAction(QIcon(":/icons/discovery.png"), tr("&Auto Discover Devices"), toolBar);
+    autoDiscoveryAction->setObjectName(QString::fromUtf8("autoDiscoveryAction"));
+    autoDiscoveryAction->setStatusTip(tr("Auto Discover Devices"));
+    autoDiscoveryAction->setCheckable(true);
+    autoDiscoveryAction->setChecked(true);
+    toolBar->addAction(autoDiscoveryAction);*/
 }
 
-void MainWindowUI::setupDocksWidgets(QMainWindow *mainWindow)
+void MainWindowUI::setupDocksWidgets(QMainWindow* mainWindow)
 {
-    this->devicesDock = new QDockWidget(tr("Devices"), mainWindow);
-    this->devicesDock->setObjectName(QString::fromUtf8("devicesDock"));
-    this->devicesDock->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-    this->devicesDock->setAllowedAreas(Qt::LeftDockWidgetArea);
-    this->devicesDock->setMinimumSize(QSize(200, 300));
-    this->devicesTreeView = new QTreeView(this->devicesDock);
-    this->devicesTreeView->setObjectName(QString::fromUtf8("devicesTreeView"));
-    this->devicesTreeView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    this->devicesDock->setWidget(this->devicesTreeView);
-    mainWindow->addDockWidget(Qt::LeftDockWidgetArea, this->devicesDock);
+    devicesDock = new QDockWidget(tr("Blixt Zeros"), mainWindow);
+    devicesDock->setObjectName(QString::fromUtf8("devicesDock"));
+    devicesDock->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    devicesDock->setAllowedAreas(Qt::TopDockWidgetArea);
+    devicesDock->setMinimumSize(QSize(300, 100));
 
-    this->messagesDock = new QDockWidget(tr("Messages"), mainWindow);
-    this->messagesDock->setObjectName(QString::fromUtf8("messagesDock"));
-    this->messagesDock->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
-    this->messagesDock->setAllowedAreas(Qt::BottomDockWidgetArea);
-    this->messagesDock->setMinimumSize(QSize(200, 150));
-    this->messagesTable = new QTableWidget(this->messagesDock);
-    this->messagesTable->setObjectName(QString::fromUtf8("messagesTable"));
-    this->messagesTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    this->messagesDock->setWidget(this->messagesTable);
-    mainWindow->addDockWidget(Qt::BottomDockWidgetArea, this->messagesDock);
+    devicesTable = new QTableWidget(devicesDock);
+    devicesTable->setObjectName(QString::fromUtf8("devicesTable"));
+    devicesTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
-    this->messagesTable->setColumnCount(3);
+    devicesDock->setWidget(devicesTable);
+    mainWindow->addDockWidget(Qt::TopDockWidgetArea, devicesDock);
+
+    devicesTable->setColumnCount(5);
+
+    messagesDock = new QDockWidget(tr("Messages"), mainWindow);
+    messagesDock->setObjectName(QString::fromUtf8("messagesDock"));
+    messagesDock->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
+    messagesDock->setAllowedAreas(Qt::BottomDockWidgetArea);
+    messagesDock->setMinimumSize(QSize(200, 150));
+    
+    messagesTable = new QTableWidget(messagesDock);
+    messagesTable->setObjectName(QString::fromUtf8("messagesTable"));
+    messagesTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    messagesDock->setWidget(messagesTable);
+    mainWindow->addDockWidget(Qt::BottomDockWidgetArea, messagesDock);
+
+    messagesTable->setColumnCount(3);
 
     QTableWidgetItem *messageTableItem = new QTableWidgetItem();
     messageTableItem->setText(tr("Timestamp"));
-    this->messagesTable->setHorizontalHeaderItem(0, messageTableItem);
+    messagesTable->setHorizontalHeaderItem(0, messageTableItem);
     messageTableItem = new QTableWidgetItem();
     messageTableItem->setText(tr("Type"));
-    this->messagesTable->setHorizontalHeaderItem(1, messageTableItem);
+    messagesTable->setHorizontalHeaderItem(1, messageTableItem);
     messageTableItem = new QTableWidgetItem();
     messageTableItem->setText(tr("Message"));
-    this->messagesTable->setHorizontalHeaderItem(2, messageTableItem);
+    messagesTable->setHorizontalHeaderItem(2, messageTableItem);
 
-    this->messagesTable->horizontalHeader()->setStretchLastSection(true);
-
+    messagesTable->horizontalHeader()->setStretchLastSection(true);
 }
+
+} // end namespace

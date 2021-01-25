@@ -1,7 +1,7 @@
-#ifndef __MAIN_WINDOW_UI_H__
-#define __MAIN_WINDOW_UI_H__
+#pragma once
 
 #include <QObject>
+#include <QLabel>
 #include <QMainWindow>
 #include <QAction>
 #include <QToolBar>
@@ -9,28 +9,32 @@
 #include <QTreeView>
 #include <QTableWidget>
 
+#include <QComboBox>
+namespace zero {
+
 class MainWindowUI: public QObject
 {
 
 public:
-    MainWindowUI();
-    virtual ~MainWindowUI();
+    MainWindowUI(QMainWindow* parent);
 
-    void setupUi(QMainWindow *mainWindow);
-
-public:
     QToolBar *toolBar;
     QAction *autoDiscoveryAction;
+    QLabel *niSelect;
+    QComboBox *networkInterfaceSelector;
+
     QWidget *centralWidget;
     QDockWidget *devicesDock;
     QDockWidget *messagesDock;
-    QTreeView *devicesTreeView;
+
+    //QTreeView *devicesTreeView;
     QTableWidget* messagesTable;
-
-private:
-    void setupToolBar(QMainWindow *mainWindow);
-    void setupDocksWidgets(QMainWindow *mainWindow);
-
+    QTableWidget* devicesTable;
+    
+private:    
+    void setupUi(QMainWindow* mainWindow);
+    void setupToolBar(QMainWindow* mainWindow);
+    void setupDocksWidgets(QMainWindow* mainWindow);
 };
 
-#endif // __MAIN_WINDOW_UI_H__
+} // end namespace zero

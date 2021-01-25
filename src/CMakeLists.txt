@@ -1,6 +1,6 @@
 set (BZCONTROLLER_SOURCES
+    networkinterfacescanner.cpp
     main.cpp
-    controllerapp.cpp
     mainwindow.cpp
     mainwindowui.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
@@ -24,6 +24,7 @@ set_property(TARGET bzcontroller PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(bzcontroller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(bzcontroller PRIVATE ${Qt5Core_INCLUDE_DIRS})
 target_include_directories(bzcontroller PRIVATE ${Qt5Svg_INCLUDE_DIRS})
+target_include_directories(bzcontroller PRIVATE ${Qt5Network_INCLUDE_DIRS})
 
 target_compile_definitions(bzcontroller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
@@ -37,6 +38,7 @@ target_link_libraries(bzcontroller Qt5::Gui)
 target_link_libraries(bzcontroller Qt5::Widgets)
 target_link_libraries(bzcontroller Qt5::OpenGL)
 target_link_libraries(bzcontroller Qt5::PrintSupport)
+target_link_libraries(bzcontroller Qt5::Network)
 target_link_libraries(bzcontroller Qt5Svg)
 target_link_libraries(bzcontroller Qt5Coap)
 target_link_libraries(bzcontroller ${CMAKE_THREAD_LIBS_INIT})

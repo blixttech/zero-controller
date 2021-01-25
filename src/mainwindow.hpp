@@ -1,19 +1,24 @@
-#ifndef __MAIN_WINDOW_H__
-#define __MAIN_WINDOW_H__
+#pragma once
 
 #include "common.hpp"
+#include "mainwindowui.hpp"
+#include "networkinterfacescanner.hpp"
 #include <QMainWindow>
+
+namespace zero {
 
 class MainWindow : public QMainWindow {
 
     Q_OBJECT
 public:
-    MainWindow(Config *config);
-    ~MainWindow();
+    MainWindow(Config& config);
 
+    virtual ~MainWindow();
 private:
-    class PrivateData;
-    PrivateData* pData_; 
+    zero::Config config;
+    MainWindowUI* ui;
+
+    NetworkInterfaceScanner* interfaceScanner;
 };
 
-#endif // __MAIN_WINDOW_H__
+}
