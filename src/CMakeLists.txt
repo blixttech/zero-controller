@@ -3,6 +3,10 @@ set (BZCONTROLLER_SOURCES
     controllerapp.cpp
     mainwindow.cpp
     mainwindowui.cpp
+    coapresourcediscovery.cpp
+    coapmessage.cpp
+    breaker.cpp
+    breakermanager.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )
@@ -23,6 +27,8 @@ set_property(TARGET bzcontroller PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(bzcontroller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(bzcontroller PRIVATE ${Qt5Core_INCLUDE_DIRS})
+target_include_directories(bzcontroller PRIVATE ${Qt5Network_INCLUDE_DIRS})
+target_include_directories(bzcontroller PRIVATE ${Qt5Coap_INCLUDE_DIRS})
 target_include_directories(bzcontroller PRIVATE ${Qt5Svg_INCLUDE_DIRS})
 
 target_compile_definitions(bzcontroller
@@ -37,6 +43,7 @@ target_link_libraries(bzcontroller Qt5::Gui)
 target_link_libraries(bzcontroller Qt5::Widgets)
 target_link_libraries(bzcontroller Qt5::OpenGL)
 target_link_libraries(bzcontroller Qt5::PrintSupport)
+target_link_libraries(bzcontroller Qt5::Network)
 target_link_libraries(bzcontroller Qt5Svg)
 target_link_libraries(bzcontroller Qt5Coap)
 target_link_libraries(bzcontroller ${CMAKE_THREAD_LIBS_INIT})
