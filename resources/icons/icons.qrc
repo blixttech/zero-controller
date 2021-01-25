@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
         <file>discovery.png</file>
+        <file>BLIXT_Logo_100x50.png</file>
+        <file>BLIXT_Logo_50x25.png</file>
     </qresource>
 </RCC>
