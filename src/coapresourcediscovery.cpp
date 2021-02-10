@@ -1,19 +1,21 @@
 #include "coapresourcediscovery.hpp"
 #include "coapmessage.hpp"
 #include <cstdint>
+#include <map>
+
 #include <QUdpSocket>
 #include <QNetworkDatagram>
 #include <QTimer>
-#include <QMap>
 #include <QUrl>
 #include <QHostAddress>
 #include <QRandomGenerator>
 #include <QtEndian>
 #include <QDebug>
 
-class CoapResourceDiscovery::LocationData
+namespace zero {
+
+struct CoapResourceDiscovery::LocationData
 {
-public:
     QHostAddress host;
     uint16_t port;
     QString path;
@@ -45,14 +47,10 @@ public:
             timer = nullptr;
         }
 
-        foreach (LocationData *location, locations) {
-            delete location;
-            location = nullptr;
-        }
     }
     QUdpSocket* socket;
     QTimer *timer;
-    QMap<QString, LocationData*> locations;
+    std::map<QString, LocationData> locations;
     QRandomGenerator randomGenerator;
 };
 
@@ -120,15 +118,19 @@ bool CoapResourceDiscovery::addLocation(const QHostAddress &host, int port, cons
     url.setPath(path);
     url.setQuery("");
 
-    auto it = pData_->locations.find(url.toString());
-    if (it == pData_->locations.end()) {
-        LocationData *location = new LocationData;
-        location->host = host;
-        location->port = port;
-        location->path = path;
-        location->lastMassageId = static_cast<uint16_t>(pData_->randomGenerator.bounded(0x10000));
-        pData_->locations.insert(url.toString(), location);
+    if (pData_->locations.count(url.toString()) != 0) 
+    {
+        return false;
     }
+
+    LocationData location = {
+        host, 
+        static_cast<uint16_t>(port), 
+        path, 
+        static_cast<uint16_t>(pData_->randomGenerator.bounded(0x10000))
+    };
+
+    pData_->locations[url.toString()] = location;
 
     return true;
 }
@@ -189,22 +191,22 @@ void CoapResourceDiscovery::processDiscoveryResponse(const QHostAddress &sender,
 
 }
 
-void CoapResourceDiscovery::processMessage(const QHostAddress &sender, int port, CoapMessage *message)
+void CoapResourceDiscovery::processMessage(const QHostAddress &sender, int port, CoapMessage& message)
 {
-    if(message->type() == CoapMessage::Type::COAP_TYPE_ACKNOWLEDGEMENT) {
+    if(message.type() == CoapMessage::Type::COAP_TYPE_ACKNOWLEDGEMENT) {
 
         CoapOption::ContentFormat format = 
                             CoapOption::ContentFormat::COAP_CONTENT_FORMAT_TEXT_PLAIN;
-        QList<CoapOption*> &options = message->options();
-        foreach (CoapOption *option, options) {
-            if (option->name() == CoapOption::Option::COAP_OPTION_CONTENT_FORMAT) {
+
+        for (auto &option : message.options()) {
+            if (option.name() == CoapOption::Option::COAP_OPTION_CONTENT_FORMAT) {
                 format = 
-                static_cast<CoapOption::ContentFormat>(qFromLittleEndian<uint16_t>(option->value()));
+                static_cast<CoapOption::ContentFormat>(qFromLittleEndian<uint16_t>(option.value()));
             }
         }
 
         if (format == CoapOption::ContentFormat::COAP_CONTENT_FORMAT_APP_LINKFORMAT) {
-            processDiscoveryResponse(sender, port, message->payload());
+            processDiscoveryResponse(sender, port, message.payload());
         }
 
     } else {
@@ -217,44 +219,40 @@ void CoapResourceDiscovery::onReadyRead()
     while (pData_->socket->hasPendingDatagrams()) {
 
         const auto &datagram = pData_->socket->receiveDatagram();
-        CoapMessage *message = CoapMessage::createFromByteArray(datagram.data(), this);
-        if (message) {
-            processMessage(datagram.senderAddress(), datagram.senderPort(), message);
-            delete message; 
-        }   
+        auto message = CoapMessage::createFromByteArray(datagram.data());
+        if (!message) continue;
 
+        processMessage(datagram.senderAddress(), datagram.senderPort(), *message);
     }
 }
 
 void CoapResourceDiscovery::onDiscoveryTimer()
 {
-        foreach (LocationData *location, pData_->locations) {
+        for (auto& [key, location] : pData_->locations) {
             QByteArray data;
             if (createDiscoveryFrame(data, location)) {
-                pData_->socket->writeDatagram(data, location->host, location->port);
+                pData_->socket->writeDatagram(data, location.host, location.port);
             }
         }
 }
 
-bool CoapResourceDiscovery::createDiscoveryFrame(QByteArray &data, LocationData* location)
+bool CoapResourceDiscovery::createDiscoveryFrame(QByteArray &data, LocationData& location)
 {
-    Q_ASSERT(location != nullptr);
+   CoapMessage message(CoapMessage::Type::COAP_TYPE_NON_CONFIRMABLE, 
+                              CoapMessage::Code::COAP_CODE_GET);
 
-    CoapMessage *message = new CoapMessage(CoapMessage::Type::COAP_TYPE_NON_CONFIRMABLE, 
-                                            CoapMessage::Code::COAP_CODE_GET, this);
-    message->setMessageId(location->lastMassageId);
-    location->lastMassageId++;
+    message.setMessageId(location.lastMassageId);
+    location.lastMassageId++;
 
-    QStringList pathList = location->path.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+    QStringList pathList = location.path.split(QLatin1Char('/'), Qt::SkipEmptyParts);
     foreach (QString segment, pathList) {
-        CoapOption *option = new CoapOption(CoapOption::Option::COAP_OPTION_URI_PATH, message);
-        QByteArray value = segment.toUtf8();
-        option->setValue(value);
-        message->addOption(option);
+        CoapOption option(CoapOption::Option::COAP_OPTION_URI_PATH);
+        auto bytes = segment.toUtf8();
+        option.setValue(bytes);
+        message.addOption(option);
     }
 
-    bool status = message->toByteArray(data);
-    delete message;
-
-    return status;
+    return message.toByteArray(data);
 }
+
+} // end namespace

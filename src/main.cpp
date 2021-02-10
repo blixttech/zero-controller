@@ -55,6 +55,7 @@ void processCmdArgs(zero::Config& config)
 
     parser.parse(QCoreApplication::arguments());
 
+    qDebug() << "Starting Application";
     if (parser.isSet(cfgFileOpt)) {
         config.insert(CONF_KEY_CFG_FILE, parser.value(cfgFileOpt));
     }

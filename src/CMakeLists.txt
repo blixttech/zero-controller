@@ -1,12 +1,14 @@
 set (BZCONTROLLER_SOURCES
-    networkinterfacescanner.cpp
+    networkinterfacelist.cpp
     main.cpp
     mainwindow.cpp
     mainwindowui.cpp
     coapresourcediscovery.cpp
     coapmessage.cpp
-    breaker.cpp
-    breakermanager.cpp
+    zeroproxy.cpp
+    zerolist.cpp
+    zerocoapscanner.cpp
+    zerotablemodel.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )

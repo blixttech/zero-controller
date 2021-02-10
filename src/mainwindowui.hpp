@@ -29,7 +29,7 @@ public:
 
     //QTreeView *devicesTreeView;
     QTableWidget* messagesTable;
-    QTableWidget* devicesTable;
+    QTableView*   zeroTable;
     
 private:    
     void setupUi(QMainWindow* mainWindow);

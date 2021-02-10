@@ -1,12 +1,13 @@
-#ifndef __COAP_MESSAGE_H__
-#define __COAP_MESSAGE_H__
+#pragma once
 
 #include <cstdint>
+#include <vector>
 #include <QByteArray>
-#include <QList>
 #include <QObject>
 
-class CoapOption : public QObject {
+namespace zero {
+
+class CoapOption {
 public:
     /// CoAP option numbers.
     enum class Option : uint8_t {
@@ -65,23 +66,18 @@ public:
         /* 65000-65535  Experimental use (no operational use) */
     };
 
-    explicit CoapOption(Option name, QObject *parent=nullptr);
-    virtual ~CoapOption();
+    explicit CoapOption(Option name);
     void setName(Option name);
     void setValue(QByteArray &value);
     Option name() const;
     QByteArray& value();
 
 protected:
-    friend class CoapMessage;
     Option name_;
     QByteArray value_;
-
-private:
-    Q_DISABLE_COPY(CoapOption);
 };
 
-class CoapMessage : public QObject {
+class CoapMessage {
 
 public:
     /// CoAP message types. Note, values only work as enum.
@@ -124,24 +120,23 @@ public:
         COAP_CODE_UNDEFINED_CODE=0xFF
     };
 
-    explicit CoapMessage(Type type, Code code, QObject *parent=nullptr);
-    virtual ~CoapMessage();
+    explicit CoapMessage(Type type, Code code);
     void setVersion(uint8_t version);
     void setType(Type type);
     void setCode(Code code);
     void setMessageId(uint16_t messageId);
     bool setToken(QByteArray &token);
-    void addOption(CoapOption *option);
+    void addOption(CoapOption& option);
     void setPayload(QByteArray &payload);
     uint8_t version();
     Type type();
     Code code();
     uint16_t messageId();
     QByteArray& token();
-    QList<CoapOption*>& options();
+    std::vector<CoapOption>& options();
     QByteArray& payload();
     bool toByteArray(QByteArray &target);
-    static CoapMessage* createFromByteArray(const QByteArray &from, QObject *parent=nullptr);
+    static std::optional<CoapMessage> createFromByteArray(const QByteArray &from);
 
 protected:
     uint8_t version_;
@@ -149,12 +144,9 @@ protected:
     Code code_;
     uint16_t messageId_;
     QByteArray token_;
-    QList<CoapOption*> options_;
+    std::vector<CoapOption> options_;
     QByteArray payload_;
-
-private:
-    Q_DISABLE_COPY(CoapMessage);
 
 };
 
-#endif // __COAP_MESSAGE_H__
+} // end namespace

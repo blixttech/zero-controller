@@ -2,7 +2,11 @@
 
 #include "common.hpp"
 #include "mainwindowui.hpp"
-#include "networkinterfacescanner.hpp"
+#include "networkinterfacelist.hpp"
+#include "zerolist.hpp"
+#include "zerocoapscanner.hpp"
+#include "zerotablemodel.hpp"
+
 #include <QMainWindow>
 
 namespace zero {
@@ -13,12 +17,19 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(Config& config);
 
-    virtual ~MainWindow();
 private:
     zero::Config config;
-    MainWindowUI* ui;
+    std::unique_ptr<MainWindowUI> ui;
 
-    NetworkInterfaceScanner* interfaceScanner;
+    std::unique_ptr<NetworkInterfaceList> interfaceList;
+    std::shared_ptr<ZeroList> zeroList;
+
+    std::unique_ptr<ZeroCoapScanner> zeroCoapScanner;
+    std::unique_ptr<ZeroTableModel> zeroTableModel;
+
+    
+
+    void connectSignals();
 };
 
 }

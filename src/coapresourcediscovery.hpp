@@ -1,12 +1,13 @@
-#ifndef __COAP_RESOURCE_DISCOVERY_H__
-#define __COAP_RESOURCE_DISCOVERY_H__
+#pragma once
 
+#include "coapmessage.hpp"
 #include <cstdint>
 #include <QObject>
 #include <QHostAddress>
 #include <QCoapResource>
 
-class CoapMessage;
+namespace zero {
+
 class CoapResourceDiscovery : public QObject
 {
     Q_OBJECT
@@ -32,9 +33,9 @@ private:
     class LocationData;
     class PrivateData;
     void processDiscoveryResponse(const QHostAddress &sender, int port, const QByteArray &data);
-    void processMessage(const QHostAddress &sender, int port, CoapMessage *message);
-    bool createDiscoveryFrame(QByteArray &data, LocationData* location);
+    void processMessage(const QHostAddress &sender, int port, CoapMessage& message);
+    bool createDiscoveryFrame(QByteArray &data, LocationData &location);
     PrivateData* pData_; 
 };
 
-#endif // __COAP_RESOURCE_DISCOVERY_H__
+} // end namespace

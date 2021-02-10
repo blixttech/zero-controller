@@ -1,15 +1,11 @@
 #include "coapmessage.hpp"
 #include <algorithm>
-#include <cstdint>
 
-CoapOption::CoapOption(Option name, QObject *parent) : QObject(parent)
+namespace zero {
+
+CoapOption::CoapOption(Option name)
 {
     this->name_ = name;
-}
-
-CoapOption::~CoapOption()
-{
-
 }
 
 void CoapOption::setName(CoapOption::Option name)
@@ -32,21 +28,12 @@ QByteArray& CoapOption::value()
     return value_;
 }
 
-CoapMessage::CoapMessage(Type type, Code code, QObject *parent) : QObject(parent)
+CoapMessage::CoapMessage(Type type, Code code)
 {
     version_ = 1;
     type_ = type;
     code_ = code;
     messageId_ = 0;
-}
-
-CoapMessage::~CoapMessage()
-{
-    foreach (CoapOption *option, options_) {
-        delete option;
-        option = nullptr;
-    }
-    options_.clear();
 }
 
 void CoapMessage::setVersion(uint8_t version)
@@ -78,10 +65,9 @@ bool CoapMessage::setToken(QByteArray &token)
     return true;
 }
 
-void CoapMessage::addOption(CoapOption *option)
+void CoapMessage::addOption(CoapOption& option)
 {
-    Q_ASSERT(option != nullptr);
-    options_.append(option);
+    options_.push_back(option);
 }
 
 void CoapMessage::setPayload(QByteArray &payload)
@@ -114,14 +100,14 @@ QByteArray& CoapMessage::token()
     return token_;
 }
 
-QList<CoapOption*>& CoapMessage::options()
+std::vector<CoapOption>& CoapMessage::options()
 {
     return options_;
 }
 
-bool sortCoapOption (CoapOption* a, CoapOption* b) 
+bool sortCoapOption (CoapOption& a, CoapOption& b) 
 { 
-    return a->name() < b->name();
+    return a.name() < b.name();
 }
 
 QByteArray& CoapMessage::payload()
@@ -152,9 +138,9 @@ bool CoapMessage::toByteArray(QByteArray &target)
     std::sort(options_.begin(), options_.end(), sortCoapOption);
 
     CoapOption::Option last_option = CoapOption::Option::COAP_OPTION_INVALID;
-    foreach (CoapOption *option, options_) {
+    for (auto &option : options_) {
 
-        uint16_t optionDelta = static_cast<uint16_t>(option->name()) - static_cast<uint16_t>(last_option);
+        uint16_t optionDelta = static_cast<uint16_t>(option.name()) - static_cast<uint16_t>(last_option);
         bool isOptionDeltaExtended = false;
         uint8_t optionDeltaExtended = 0;
 
@@ -169,7 +155,7 @@ bool CoapMessage::toByteArray(QByteArray &target)
             isOptionDeltaExtended = true;
         }
         
-        uint16_t optionLength = static_cast<uint16_t>(option->value().length());
+        uint16_t optionLength = static_cast<uint16_t>(option.value().length());
         bool isOptionLengthExtended = false;
         uint8_t optionLengthExtended = 0;
 
@@ -194,8 +180,8 @@ bool CoapMessage::toByteArray(QByteArray &target)
             target.append(optionLengthExtended);
         }
 
-        target.append(option->value());
-        last_option = option->name();
+        target.append(option.value());
+        last_option = option.name();
     }
 
     if (!payload_.isEmpty()) {
@@ -217,10 +203,10 @@ bool CoapMessage::toByteArray(QByteArray &target)
 //! +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //! |1 1 1 1 1 1 1 1|    Payload (if any) ...
 //! +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-CoapMessage* CoapMessage::createFromByteArray(const QByteArray &from, QObject *parent)
+std::optional<CoapMessage> CoapMessage::createFromByteArray(const QByteArray &from)
 {
     if (from.length() < 4) {
-        return nullptr;
+        return std::nullopt;
     }
 
     const uint8_t *data = reinterpret_cast<const uint8_t *>(from.data());
@@ -232,13 +218,13 @@ CoapMessage* CoapMessage::createFromByteArray(const QByteArray &from, QObject *p
     uint16_t messageId = static_cast<uint16_t>(data[2]) << 8 | static_cast<uint16_t>(data[3]);
 
     if (from.length() < 4 + tokenLen) {
-        return nullptr;
+        return std::nullopt;
     }
 
-    CoapMessage *message = new CoapMessage(type, code, parent);
-    message->setVersion(version);
+    CoapMessage message(type, code);
+    message.setVersion(version);
     QByteArray token = from.mid(4, tokenLen);
-    message->setToken(token);
+    message.setToken(token);
 
     uint16_t idx = 4 + tokenLen;
     uint16_t lastOptionNumber = 0;
@@ -267,21 +253,22 @@ CoapMessage* CoapMessage::createFromByteArray(const QByteArray &from, QObject *p
         uint16_t optionNumber = lastOptionNumber + optionDelta;
         lastOptionNumber = optionNumber;
 
-        CoapOption *option = new CoapOption(static_cast<CoapOption::Option>(optionNumber), message);
+        CoapOption option(static_cast<CoapOption::Option>(optionNumber));
         QByteArray value = from.mid(idx + 1, optionLength);
-        option->setValue(value);
-        message->addOption(option);
+        option.setValue(value);
+        message.addOption(option);
 
         idx += 1 + optionLength;
     }
 
     if (idx < from.length() && data[idx] == 0xFF) {
         QByteArray payload = from.mid(idx + 1);
-        message->setPayload(payload);
+        message.setPayload(payload);
     } else {
-        delete message;
-        return nullptr;
+        return std::nullopt;
     }
 
-    return message;
+    return { message };
 }
+
+} // end namespace

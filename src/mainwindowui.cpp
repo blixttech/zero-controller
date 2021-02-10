@@ -40,7 +40,8 @@ void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
     toolBar = mainWindow->addToolBar(tr("Common Functions"));
     toolBar->setObjectName(QString::fromUtf8("toolBar"));
 
-    niSelect = new QLabel(QString::fromUtf8("Network"), toolBar);
+    niSelect = new QLabel(QString::fromUtf8("Select Network"), toolBar);
+    niSelect->setMargin(5);
     toolBar->addWidget(niSelect);
 
     networkInterfaceSelector = new QComboBox(toolBar);
@@ -64,14 +65,12 @@ void MainWindowUI::setupDocksWidgets(QMainWindow* mainWindow)
     devicesDock->setAllowedAreas(Qt::TopDockWidgetArea);
     devicesDock->setMinimumSize(QSize(300, 100));
 
-    devicesTable = new QTableWidget(devicesDock);
-    devicesTable->setObjectName(QString::fromUtf8("devicesTable"));
-    devicesTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    zeroTable = new QTableView(devicesDock);
+    zeroTable->setObjectName(QString::fromUtf8("zeroTable"));
+    zeroTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
-    devicesDock->setWidget(devicesTable);
+    devicesDock->setWidget(zeroTable);
     mainWindow->addDockWidget(Qt::TopDockWidgetArea, devicesDock);
-
-    devicesTable->setColumnCount(5);
 
     messagesDock = new QDockWidget(tr("Messages"), mainWindow);
     messagesDock->setObjectName(QString::fromUtf8("messagesDock"));
