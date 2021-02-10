@@ -83,6 +83,8 @@ private:
     bool otpActivated_;
 
     uint32_t uptime_;
+    uint32_t vRms_;
+    uint32_t cRms_;
 
 };
 

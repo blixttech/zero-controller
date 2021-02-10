@@ -37,8 +37,8 @@ QVariant ZeroTableModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
     // generate a log message when this method gets called
-    qDebug() << QString("row %1, col%2, role %3")
-            .arg(row).arg(col).arg(role);
+/*    qDebug() << QString("row %1, col%2, role %3")
+            .arg(row).arg(col).arg(role);*/
 
     switch (role) 
     {
@@ -51,9 +51,9 @@ QVariant ZeroTableModel::data(const QModelIndex &index, int role) const
                 case 1:
                     return zList->zeros()[row]->closed() ? tr("Closed") : tr("Open"); 
                 case 2:
-                    return QString("20"); //zList->zeros()[row].uuid(); 
+                    return QString::number(zList->zeros()[row]->voltageRms());
                 case 3:
-                    return QString("1"); //zList->zeros()[row].uuid();
+                    return QString::number(zList->zeros()[row]->currentRms());
                 case 6:
                     return QString::number(zList->zeros()[row]->uptime());
                 default:

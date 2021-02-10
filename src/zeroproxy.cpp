@@ -13,7 +13,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     url_(url), uuid_(uuid), hardwareVersion_(hardwareVersion),
     macAddress_(macAddress), name_(""),
     closed_(false), ocpActivated_(false), otpActivated_(false),
-    uptime_(0)
+    uptime_(0), vRms_(0), cRms_(0)
 {
     auto oUrl = url;
     oUrl.setPath("/status");
@@ -60,6 +60,16 @@ bool ZeroProxy::closed() const
 {
     return closed_;
 }
+    
+uint32_t ZeroProxy::voltageRms() const
+{
+    return vRms_;
+}
+
+uint32_t ZeroProxy::currentRms() const
+{
+    return cRms_;
+}
 
 void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 {
@@ -87,6 +97,9 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 
     uptime_ = QString::fromUtf8(values[0]).toUInt();
     closed_ = QString::fromUtf8(values[1]).toInt();
+    cRms_ = QString::fromUtf8(values[5]).toUInt();
+    vRms_ = QString::fromUtf8(values[7]).toUInt();
+
 
     emit statusUpdated(uuid_);
 /*    const QList<QByteArray> values = message.payload().split(',');
