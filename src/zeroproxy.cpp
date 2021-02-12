@@ -1,6 +1,7 @@
 #include "zeroproxy.hpp"
 #include <QtEndian>
 #include <QVariant>
+#include <QUrlQuery>
 
 namespace zero {
 
@@ -12,18 +13,51 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     observerReply(nullptr),
     url_(url), uuid_(uuid), hardwareVersion_(hardwareVersion),
     macAddress_(macAddress), name_(""),
+    updateInterval_(100),
     closed_(false), ocpActivated_(false), otpActivated_(false),
     uptime_(0), vRms_(0), cRms_(0)
 {
-    auto oUrl = url;
-    oUrl.setPath("/status");
-    observerReply = coapClient.observe(oUrl);
-    connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
+    subscribe();
 }
 
 ZeroProxy::~ZeroProxy()
 {
+    unsubscribe();
+}
+
+void ZeroProxy::subscribe()
+{
+    auto oUrl = url_;
+    oUrl.setPath("/status");
+    QUrlQuery params;
+    params.addQueryItem("p", QString::number(updateInterval_));
+    oUrl.setQuery(params);
+
+    observerReply = coapClient.observe(oUrl);
+    connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
+}
+
+void ZeroProxy::unsubscribe()
+{
+    if (nullptr == observerReply) return;
+
     coapClient.cancelObserve(observerReply);
+    connect(observerReply, &QCoapReply::finished, this, &ZeroProxy::onUnsubscribe);
+}
+
+uint32_t ZeroProxy::updateInterval() const
+{
+    return updateInterval_;
+}
+
+void ZeroProxy::onUnsubscribe(QCoapReply *reply)
+{
+    if (reply->errorReceived() != QtCoap::Error::Ok)
+    {
+       return;
+    }
+    observerReply = nullptr;
+    emit unsubscribed();
 }
 
 QHostAddress ZeroProxy::host() const
@@ -73,6 +107,9 @@ uint32_t ZeroProxy::currentRms() const
 
 void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 {
+    if (reply->errorReceived() != QtCoap::Error::Ok)
+       return;
+
     QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
     if(!format.isValid() || format.uintValue() != 0) {
         qDebug() << "Invalid content format";
@@ -102,6 +139,14 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 
 
     emit statusUpdated(uuid_);
+
+    /*static int counter = 0;
+    counter++;
+    if (counter == 5)
+    {
+        qDebug() << "UNSUBSCRIBING";
+        unsubscribe();
+    }*/
 /*    const QList<QByteArray> values = message.payload().split(',');
     if (values.length() < 5) {
         qDebug() << "Invalid version format";

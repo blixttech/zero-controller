@@ -23,11 +23,14 @@ public:
 
     void addZeroProxy(std::shared_ptr<ZeroProxy> zero);
 
-    const ZeroVec& zeros() const; 
+    const ZeroVec& zeros() const;
+
+    void unsubscribe(); 
 
 signals:
     void newZeroAdded(int index);
     void zeroUpdated(int index);
+    void allUnsubscribed();
 
 
 private:
@@ -35,8 +38,10 @@ private:
 
     ZeroMap zeros_; 
     ZeroVec zerosVec_;
+    uint unsubscribeCounter_;
 
     void notifyOfZeroUpdate(const QString& uuid);
+    void notifyOfZeroUnsubscribed();
 };
 
 } // end namespace

@@ -1,6 +1,11 @@
 #include "mainwindow.hpp"
 #include "mainwindowui.hpp"
 
+#include <QMessageBox>
+#include <QApplication>
+#include <QAbstractButton>
+#include <QTimer>
+
 namespace zero {
 
 MainWindow::MainWindow(Config& config): QMainWindow(nullptr),
@@ -37,12 +42,33 @@ void MainWindow::connectSignals()
             // create a new proxy
             auto zProxy = std::make_unique<ZeroProxy>(url, uuid, hwversion, macaddress);
             zeroList->addZeroProxy(std::move(zProxy));
-
         }
     );
-
-
 }
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    event->ignore();
+
+    QMessageBox* box = new QMessageBox(QMessageBox::Question, 
+                                       qApp->applicationName(), 
+                                       "Are you sure you want to quit?",
+                                       QMessageBox::Yes | QMessageBox::No, 
+                                       this);
+
+    QObject::connect(box->button(QMessageBox::Yes), &QAbstractButton::clicked, zeroList.get(), &ZeroList::unsubscribe);
+    QObject::connect(box->button(QMessageBox::No), &QAbstractButton::clicked, box, &QObject::deleteLater);
+
+    QObject::connect(zeroList.get(), &ZeroList::allUnsubscribed, 
+            [=] ()
+            {
+                QTimer::singleShot(200, qApp, &QApplication::quit);
+            }
+    );
+
+    box->show();
+}
+
 
 } // end namespace
 

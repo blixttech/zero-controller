@@ -59,16 +59,28 @@ public:
     QString name() const;
 //    uint32_t lastTimestamp();
     QUrl url() const;
+    uint32_t updateInterval() const;
 
     uint32_t uptime() const;
+    
+
+    void unsubscribe();
+
+
 
 signals:
     void statusUpdated(const QString& uuid);
+    void unsubscribed();
+
+
 
 private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
+    void onUnsubscribe(QCoapReply *reply);
 
 private:
+    void subscribe();
+
     QCoapClient coapClient;
     QCoapReply* observerReply;
 
@@ -77,6 +89,7 @@ private:
     QString hardwareVersion_;
     QString macAddress_;
     QString name_;
+    uint32_t updateInterval_;
 
     bool closed_;
     bool ocpActivated_;

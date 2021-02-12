@@ -8,6 +8,7 @@
 #include "zerotablemodel.hpp"
 
 #include <QMainWindow>
+#include <QCloseEvent> 
 
 namespace zero {
 
@@ -16,6 +17,9 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     MainWindow(Config& config);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     zero::Config config;

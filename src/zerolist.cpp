@@ -4,7 +4,7 @@
 namespace zero {
 
 ZeroList::ZeroList(QObject *parent) : QObject(parent),
-    zeros_(), zerosVec_()
+    zeros_(), zerosVec_(), unsubscribeCounter_(0)
 {
 }
 
@@ -27,6 +27,9 @@ void ZeroList::addZeroProxy(std::shared_ptr<ZeroProxy> zero)
 
     connect(zero.get(), &ZeroProxy::statusUpdated,
             this, &ZeroList::notifyOfZeroUpdate);
+    
+    connect(zero.get(), &ZeroProxy::unsubscribed,
+            this, &ZeroList::notifyOfZeroUnsubscribed);
 }
 
 const ZeroVec& ZeroList::zeros() const
@@ -40,6 +43,31 @@ void ZeroList::notifyOfZeroUpdate(const QString& uuid)
 
     auto index = zeros_.at(uuid);
     emit zeroUpdated(index);
+}
+
+void ZeroList::unsubscribe()
+{
+    unsubscribeCounter_ = zerosVec_.size();
+    if (0 == unsubscribeCounter_)
+        emit allUnsubscribed();
+
+    foreach (auto zero, zerosVec_) 
+    {
+        zero->unsubscribe();
+    }
+}
+
+void ZeroList::notifyOfZeroUnsubscribed()
+{
+    if (unsubscribeCounter_ > 1)
+    {
+        unsubscribeCounter_--;
+    }
+    else
+    {
+        unsubscribeCounter_ = 0;
+        emit allUnsubscribed();
+    }
 }
 
 } //end of namespace
