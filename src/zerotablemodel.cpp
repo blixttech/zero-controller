@@ -1,4 +1,5 @@
 #include "zerotablemodel.hpp"
+#include <QBrush>
 
 namespace zero {
 
@@ -16,10 +17,16 @@ ZeroTableModel::ZeroTableModel(std::shared_ptr<ZeroList> zList, QObject *parent)
     QAbstractTableModel(parent),
     zList(zList)
 {
-    connect(zList.get(), &ZeroList::newZeroAdded,
-            this, &ZeroTableModel::newZeroAdded);
+    connect(zList.get(), &ZeroList::beforeAddingZero,
+            this, &ZeroTableModel::beforeAddingZero);
+    connect(zList.get(), &ZeroList::zeroAdded,
+            this, &ZeroTableModel::zeroAdded);
     connect(zList.get(), &ZeroList::zeroUpdated,
             this, &ZeroTableModel::zeroUpdated);
+    connect(zList.get(), &ZeroList::beforeErasingZero,
+            this, &ZeroTableModel::beforeErasingZero);
+    connect(zList.get(), &ZeroList::zeroErased,
+            this, &ZeroTableModel::zeroErased);
 }
 
 int ZeroTableModel::rowCount(const QModelIndex &parent) const
@@ -66,12 +73,12 @@ QVariant ZeroTableModel::data(const QModelIndex &index, int role) const
                 boldFont.setBold(true);
                 return boldFont;
             }
-            break;
+            break;*/
         case Qt::BackgroundRole:
-            if (row == 1 && col == 2)  //change background only for cell(1,2)
-                return QBrush(Qt::red);
+            if (zList->zeros()[row]->isStale())
+                return QBrush(Qt::gray);
             break;
-        case Qt::TextAlignmentRole:
+/*        case Qt::TextAlignmentRole:
             if (row == 1 && col == 1) //change text alignment only for cell(1,1)
                 return int(Qt::AlignRight | Qt::AlignVCenter);
             break;*/
@@ -99,9 +106,13 @@ QVariant ZeroTableModel::headerData(int section, Qt::Orientation orientation, in
     return QVariant();
 }
 
-void ZeroTableModel::newZeroAdded(int newRow)
+void ZeroTableModel::beforeAddingZero(int newRow)
 {
     beginInsertRows(QModelIndex(), newRow, newRow);
+}
+
+void ZeroTableModel::zeroAdded(int newRow)
+{
     // datasource was externally updated
     endInsertRows();
 }
@@ -112,6 +123,17 @@ void ZeroTableModel::zeroUpdated(int updatedRow)
     auto bottomRight = createIndex(updatedRow,columnCount());
 
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
+}
+
+void ZeroTableModel::beforeErasingZero(int removedRow)
+{
+    beginRemoveRows(QModelIndex(), removedRow, removedRow);
+}
+
+void ZeroTableModel::zeroErased(int removedRow)
+{
+    // datasource was externally updated
+    endRemoveRows();
 }
 
 } // end of namespace

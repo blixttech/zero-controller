@@ -19,17 +19,24 @@ public:
     explicit ZeroList(QObject *parent=nullptr);
     
 
-    bool containsZero(const QString& uuid) const;
-
-    void addZeroProxy(std::shared_ptr<ZeroProxy> zero);
+    void insert(std::shared_ptr<ZeroProxy> zero);
+    bool contains(const QString& uuid) const;
+    std::shared_ptr<ZeroProxy> const get(const QString& uuid) const;
+    void erase(const QString& uuid);
 
     const ZeroVec& zeros() const;
 
     void unsubscribe(); 
 
 signals:
-    void newZeroAdded(int index);
+    void beforeAddingZero(int index);
+    void zeroAdded(int index);
+    
     void zeroUpdated(int index);
+
+    void beforeErasingZero(int index);
+    void zeroErased(int index);
+   
     void allUnsubscribed();
 
 

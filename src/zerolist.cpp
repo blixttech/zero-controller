@@ -8,26 +8,58 @@ ZeroList::ZeroList(QObject *parent) : QObject(parent),
 {
 }
 
-bool ZeroList::containsZero(const QString& uuid) const
+bool ZeroList::contains(const QString& uuid) const
 {
     return (zeros_.count(uuid) != 0);
 }
 
-void ZeroList::addZeroProxy(std::shared_ptr<ZeroProxy> zero)
+std::shared_ptr<ZeroProxy> const  ZeroList::get(const QString& uuid) const
+{
+    if (!contains(uuid)) return std::shared_ptr<ZeroProxy>();
+
+    return zerosVec_[zeros_.at(uuid)];
+}
+
+void ZeroList::erase(const QString& uuid)
+{
+    if (!contains(uuid)) return;
+
+    auto idx = zeros_[uuid];
+
+    emit beforeErasingZero(idx);
+    zerosVec_.erase(zerosVec_.begin() + idx);
+    zeros_.erase(uuid);
+    emit zeroErased(idx);
+}
+
+void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
 {
     if (zeros_.count(zero->uuid()) != 0)
         return;
+
+    emit beforeAddingZero(zerosVec_.size());
 
     zerosVec_.push_back(zero);
 
     uint32_t zeroIndex = zerosVec_.size()-1;
     zeros_.insert({zero->uuid(), zeroIndex});
 
-    emit newZeroAdded(zeroIndex);
+    emit zeroAdded(zeroIndex);
 
     connect(zero.get(), &ZeroProxy::statusUpdated,
-            this, &ZeroList::notifyOfZeroUpdate);
+            [=]() 
+            {
+                notifyOfZeroUpdate(zero->uuid());
+            }
+    );
     
+    connect(zero.get(), &ZeroProxy::stale,
+            [=]() 
+            {
+                notifyOfZeroUpdate(zero->uuid());
+            }
+    );
+
     connect(zero.get(), &ZeroProxy::unsubscribed,
             this, &ZeroList::notifyOfZeroUnsubscribed);
 }

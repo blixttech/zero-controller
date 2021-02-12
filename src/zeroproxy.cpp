@@ -2,6 +2,8 @@
 #include <QtEndian>
 #include <QVariant>
 #include <QUrlQuery>
+#include <QState>
+#include <QFinalState>
 
 namespace zero {
 
@@ -10,7 +12,8 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
             const QString& macAddress,
             QObject *parent) : QObject(parent),
     coapClient(QtCoap::SecurityMode::NoSecurity),
-    observerReply(nullptr),
+    observerReply(nullptr), staleDetection(),
+    liveTimer(), stale_(false), //staleTimer(),
     url_(url), uuid_(uuid), hardwareVersion_(hardwareVersion),
     macAddress_(macAddress), name_(""),
     updateInterval_(100),
@@ -18,6 +21,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     uptime_(0), vRms_(0), cRms_(0)
 {
     subscribe();
+    initStaleDetection();
 }
 
 ZeroProxy::~ZeroProxy()
@@ -35,6 +39,55 @@ void ZeroProxy::subscribe()
 
     observerReply = coapClient.observe(oUrl);
     connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
+}
+
+void ZeroProxy::initStaleDetection()
+{
+    qDebug() << "Configure statemachine";
+    QState* live = new QState(); 
+    QState* stale = new QState(); 
+//    QFinalState* dead = new QFinalState();
+
+    liveTimer.setSingleShot(true);
+    liveTimer.setInterval(5*updateInterval_);
+    live->addTransition(&liveTimer, &QTimer::timeout, stale);
+    live->addTransition(this, &ZeroProxy::statusUpdated, live);
+    connect(live, &QState::entered, 
+            [&]()
+            {
+                qDebug() << "Entering live";
+                liveTimer.start();
+            }
+    );
+
+/*    staleTimer.setSingleShot(true); 
+    staleTimer.setInterval(10*updateInterval_);
+    stale->addTransition(&staleTimer, &QTimer::timeout, dead);*/
+    stale->addTransition(this, &ZeroProxy::statusUpdated, live);
+    connect(stale, &QState::entered, 
+            [&]()
+            {
+                qDebug() << "Entering stale";
+                stale_ = true;
+                emit this->stale();
+//                staleTimer.start();
+            }
+    );
+    connect(stale, &QState::exited, 
+            [&]()
+            {
+                stale_ = false;
+                qDebug() << "Leaving stale";
+//                staleTimer.stop();
+            }
+    );
+
+    staleDetection.addState(live);
+    staleDetection.addState(stale);
+ //   staleDetection.addState(dead);
+
+    staleDetection.setInitialState(live);
+    staleDetection.start();
 }
 
 void ZeroProxy::unsubscribe()
@@ -105,6 +158,11 @@ uint32_t ZeroProxy::currentRms() const
     return cRms_;
 }
 
+bool ZeroProxy::isStale() const
+{
+    return stale_;
+}
+
 void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 {
     if (reply->errorReceived() != QtCoap::Error::Ok)
@@ -138,20 +196,7 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     vRms_ = QString::fromUtf8(values[7]).toUInt();
 
 
-    emit statusUpdated(uuid_);
-
-    /*static int counter = 0;
-    counter++;
-    if (counter == 5)
-    {
-        qDebug() << "UNSUBSCRIBING";
-        unsubscribe();
-    }*/
-/*    const QList<QByteArray> values = message.payload().split(',');
-    if (values.length() < 5) {
-        qDebug() << "Invalid version format";
-        return;
-    }*/
+    emit statusUpdated();
 }
 
 } // end namespace

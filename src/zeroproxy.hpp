@@ -1,11 +1,13 @@
 #pragma once
 
-#include <QObject>
-#include <QString>
-#include <QHostAddress>
-#include <QCoapReply>
-#include <QUrl>
 #include <QCoapClient>
+#include <QCoapReply>
+#include <QHostAddress>
+#include <QObject>
+#include <QStateMachine>
+#include <QString>
+#include <QTimer>
+#include <QUrl>
 
 namespace zero {
 
@@ -66,11 +68,19 @@ public:
 
     void unsubscribe();
 
+    bool isStale() const;
 
 
 signals:
-    void statusUpdated(const QString& uuid);
+    void statusUpdated();
     void unsubscribed();
+
+    // emitted when the zero has been stale for too long
+    // the proxy should be deleted after this
+//    void dead();
+
+    // emitted when the zero has not send status data in a while
+    void stale();
 
 
 
@@ -80,9 +90,17 @@ private slots:
 
 private:
     void subscribe();
+    void initStaleDetection();
 
     QCoapClient coapClient;
     QCoapReply* observerReply;
+
+    QStateMachine staleDetection;
+    QTimer liveTimer;
+ //   QTimer staleTimer;
+ //
+    bool stale_;
+    
 
     QUrl url_;
     QString uuid_;

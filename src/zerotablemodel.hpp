@@ -17,8 +17,13 @@ namespace zero {
             QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
        
         private slots:
-            void newZeroAdded(int newRow); 
+            void beforeAddingZero(int newRow); 
+            void zeroAdded(int newRow); 
+
             void zeroUpdated(int updatedRow); 
+
+            void beforeErasingZero(int removedRow); 
+            void zeroErased(int removedRow); 
 
         private:
             std::shared_ptr<ZeroList> zList;

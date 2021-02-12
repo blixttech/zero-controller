@@ -37,11 +37,19 @@ void MainWindow::connectSignals()
              const QString& hwversion, const QString& macaddress)
         {
             // if the zero is already registered, we are done
-            if (zeroList->containsZero(uuid)) return;
+            if (zeroList->contains(uuid))
+            {
+                auto zpr = zeroList->get(uuid);
+                // if still active, nothing to do
+                if (!zpr->isStale()) return;
+               
+                // remove it, and replace it with a new version 
+                zeroList->erase(uuid);
+            }
 
             // create a new proxy
-            auto zProxy = std::make_unique<ZeroProxy>(url, uuid, hwversion, macaddress);
-            zeroList->addZeroProxy(std::move(zProxy));
+            auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress);
+            zeroList->insert(zProxy);
         }
     );
 }
