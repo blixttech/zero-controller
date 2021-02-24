@@ -6,8 +6,8 @@ namespace zero {
 std::vector<QString> ZeroLiveViewModel::headers({
         QT_TR_NOOP("UUID"),
         QT_TR_NOOP("Status"),
-        QT_TR_NOOP("Vᵣₘₛ"),
-        QT_TR_NOOP("Iᵣₘₛ"),
+        QT_TR_NOOP("Vᵣₘₛ(V)"),
+        QT_TR_NOOP("Iᵣₘₛ(A)"),
         QT_TR_NOOP("OCP"),
         QT_TR_NOOP("OTP"),
         QT_TR_NOOP("Uptime(s)")
@@ -58,9 +58,9 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 case 1:
                     return zList->zeros()[row]->closed();// ? tr("Closed") : tr("Open");
                 case 2:
-                    return QString::number(zList->zeros()[row]->voltageRms());
+                    return QString::number(zList->zeros()[row]->voltageRms() / 1000.0);
                 case 3:
-                    return QString::number(zList->zeros()[row]->currentRms());
+                    return QString::number(zList->zeros()[row]->currentRms() / 1000.0);
                 case 6:
                     return QString::number(zList->zeros()[row]->uptime());
                 default:
