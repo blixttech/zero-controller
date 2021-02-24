@@ -289,7 +289,7 @@ void ZeroProxy::loadImages()
 QString ZeroProxy::slotInfo(uint32_t sidx) const
 {
     if (sidx > 1) return "";
-    if (fwSlots.size() < sidx+1) return "";
+    if (fwSlots.size() < sidx+1) return "Empty";
 
     auto &s = fwSlots[sidx];
     return "Version: " + s.version + " active: " + (s.active ? "Yes" : "No");
