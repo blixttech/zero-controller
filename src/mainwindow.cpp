@@ -14,15 +14,15 @@ MainWindow::MainWindow(Config& config): QMainWindow(nullptr),
     interfaceList(std::make_unique<NetworkInterfaceList>()),
     zeroList(std::make_shared<ZeroList>()),
     zeroCoapScanner(std::make_unique<ZeroCoapScanner>()),
-    zeroTableModel(std::make_unique<ZeroTableModel>(zeroList))
+    zeroLiveViewModel(std::make_unique<ZeroLiveViewModel>(zeroList)),
+    zeroManagementViewModel(std::make_unique<ZeroManagementViewModel>(zeroList))
 {
     ui->networkInterfaceSelector->setModel(interfaceList.get());
-    ui->zeroTable->setModel(zeroTableModel.get());
+    ui->liveView->setModel(zeroLiveViewModel.get());
+    ui->mgmtView->setModel(zeroManagementViewModel.get());
     connectSignals();
 
     zeroCoapScanner->startScanning();
-
-
 }
 
 void MainWindow::connectSignals()
@@ -52,6 +52,8 @@ void MainWindow::connectSignals()
             zeroList->insert(zProxy);
         }
     );
+
+
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -70,7 +72,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QObject::connect(zeroList.get(), &ZeroList::allUnsubscribed, 
             [=] ()
             {
-                QTimer::singleShot(200, qApp, &QApplication::quit);
+                QTimer::singleShot(500, qApp, &QApplication::quit);
             }
     );
 

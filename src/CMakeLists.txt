@@ -8,7 +8,16 @@ set (BZCONTROLLER_SOURCES
     zeroproxy.cpp
     zerolist.cpp
     zerocoapscanner.cpp
-    zerotablemodel.cpp
+    zeroliveviewmodel.cpp
+    zeroliveviewtab.cpp
+    openclosebuttondelegate.cpp
+    zeromanagementviewmodel.cpp
+    zeromanagementviewtab.cpp
+    smpimagemgmt.cpp
+    smpheader.cpp
+    smprequest.cpp
+    smpclient.cpp
+    smpreply.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )

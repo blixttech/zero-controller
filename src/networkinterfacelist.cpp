@@ -11,9 +11,6 @@ NetworkInterfaceList::NetworkInterfaceList(QObject *parent) :
 {
     auto interfaceList = QNetworkInterface::allInterfaces();
 
-    //add an empty one as the first one
-    interfaces.append(QNetworkInterface()); 
-
     for (auto i = interfaceList.begin(); i != interfaceList.end(); ++i)
     {
         if (!((QNetworkInterface::Ethernet == i->type()) 
@@ -31,18 +28,23 @@ NetworkInterfaceList::NetworkInterfaceList(QObject *parent) :
 
 int NetworkInterfaceList::rowCount(const QModelIndex &parent) const
 {
-    return interfaces.size();
+    return interfaces.size()+1;
 }
 
 QVariant NetworkInterfaceList::data(const QModelIndex &index, int role) const
 {
-    if ((!index.isValid()) || (index.row() >= interfaces.size()))
+    if ((!index.isValid()) || (index.row()-1 >= interfaces.size()))
         return QVariant();
 
     if ((Qt::DisplayRole != role) && (Qt::ToolTipRole != role) && (Qt::WhatsThisRole != role))
         return QVariant();
-   
-    auto item = interfaces[index.row()];
+  
+    int row = index.row();
+    if (0 == row)
+       return "Select Interface...";
+    else row--;
+
+    auto item = interfaces[row];
 
     auto addresses = item.addressEntries();
     if (0 == addresses.size())
@@ -62,7 +64,8 @@ QVariant NetworkInterfaceList::headerData(int section, Qt::Orientation orientati
         
 void NetworkInterfaceList::selectedInterface(int index)
 {
-    emit scan(interfaces[index].addressEntries()[0].broadcast(), 5683);
+    if (0 == index) return;
+    emit scan(interfaces[index-1].addressEntries()[0].broadcast(), 5683);
 }
 
 } //end namespace

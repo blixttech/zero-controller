@@ -4,7 +4,6 @@
 #include <QIcon>
 #include <QStatusBar>
 #include <QTableWidgetItem>
-#include <QHeaderView>
 
 namespace zero {
 
@@ -26,13 +25,25 @@ void MainWindowUI::setupUi(QMainWindow* mainWindow)
     mainWindow->setSizePolicy(sizePolicy);
     mainWindow->setMinimumSize(QSize(1024, 700));
 
-    centralWidget = new QWidget(mainWindow);
-    mainWindow->setCentralWidget(this->centralWidget);
+    //centralWidget = new QWidget(mainWindow);
+   // mainWindow->setCentralWidget(this->centralWidget);
 
     setupToolBar(mainWindow);
-    setupDocksWidgets(mainWindow);
+    setupMainTabs(mainWindow);
+//    setupDocksWidgets(mainWindow);
 
     mainWindow->statusBar()->showMessage(tr("Status Bar"));
+}
+
+void MainWindowUI::setupMainTabs(QMainWindow* mainWindow)
+{
+    mainTabs = new QTabWidget(mainWindow);
+    mainWindow->setCentralWidget(mainTabs);
+    
+    liveView = new ZeroLiveViewTab(mainTabs);
+    mgmtView = new ZeroManagementViewTab(mainTabs);
+    mainTabs->addTab(liveView, tr("Live"));
+    mainTabs->addTab(mgmtView, tr("Manage"));
 }
 
 void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
@@ -40,7 +51,7 @@ void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
     toolBar = mainWindow->addToolBar(tr("Common Functions"));
     toolBar->setObjectName(QString::fromUtf8("toolBar"));
 
-    niSelect = new QLabel(QString::fromUtf8("Select Network"), toolBar);
+    niSelect = new QLabel(QString::fromUtf8("Network"), toolBar);
     niSelect->setMargin(5);
     toolBar->addWidget(niSelect);
 
@@ -48,15 +59,9 @@ void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
     networkInterfaceSelector->setObjectName(QString::fromUtf8("networkInterfaceSelector"));
     networkInterfaceSelector->setStatusTip(tr("Select Network Interface"));
     toolBar->addWidget(networkInterfaceSelector);
-
-    /*autoDiscoveryAction = new QAction(QIcon(":/icons/discovery.png"), tr("&Auto Discover Devices"), toolBar);
-    autoDiscoveryAction->setObjectName(QString::fromUtf8("autoDiscoveryAction"));
-    autoDiscoveryAction->setStatusTip(tr("Auto Discover Devices"));
-    autoDiscoveryAction->setCheckable(true);
-    autoDiscoveryAction->setChecked(true);
-    toolBar->addAction(autoDiscoveryAction);*/
 }
 
+#if 0
 void MainWindowUI::setupDocksWidgets(QMainWindow* mainWindow)
 {
     devicesDock = new QDockWidget(tr("Blixt Zeros"), mainWindow);
@@ -65,14 +70,11 @@ void MainWindowUI::setupDocksWidgets(QMainWindow* mainWindow)
     devicesDock->setAllowedAreas(Qt::TopDockWidgetArea);
     devicesDock->setMinimumSize(QSize(300, 100));
 
-    zeroTable = new QTableView(devicesDock);
-    zeroTable->setObjectName(QString::fromUtf8("zeroTable"));
-    zeroTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
     devicesDock->setWidget(zeroTable);
     mainWindow->addDockWidget(Qt::TopDockWidgetArea, devicesDock);
 
-    messagesDock = new QDockWidget(tr("Messages"), mainWindow);
+/*    messagesDock = new QDockWidget(tr("Messages"), mainWindow);
     messagesDock->setObjectName(QString::fromUtf8("messagesDock"));
     messagesDock->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable);
     messagesDock->setAllowedAreas(Qt::BottomDockWidgetArea);
@@ -96,7 +98,7 @@ void MainWindowUI::setupDocksWidgets(QMainWindow* mainWindow)
     messageTableItem->setText(tr("Message"));
     messagesTable->setHorizontalHeaderItem(2, messageTableItem);
 
-    messagesTable->horizontalHeader()->setStretchLastSection(true);
+    messagesTable->horizontalHeader()->setStretchLastSection(true);*/
 }
-
+#endif
 } // end namespace

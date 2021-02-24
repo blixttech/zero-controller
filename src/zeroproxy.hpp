@@ -9,6 +9,9 @@
 #include <QTimer>
 #include <QUrl>
 
+#include "smpclient.hpp"
+#include "smpimagemgmt.hpp"
+
 namespace zero {
 
 class ZeroProxy : public QObject
@@ -46,7 +49,7 @@ public:
     QString uuid() const ;
     QString hardwareVersion() const ;
     QString hardwareAddress() const;
-    QHostAddress host() const;
+    QString host() const;
     
     // TODO: return tuple of timestamp and voltage
     uint32_t voltage() const;
@@ -64,12 +67,21 @@ public:
     uint32_t updateInterval() const;
 
     uint32_t uptime() const;
+
+    QString slotInfo(uint32_t slot) const;
     
 
-    void unsubscribe();
 
     bool isStale() const;
+    bool isLive() const;
 
+
+    void unsubscribe();
+    /*
+     * Sends a request to the associated Zero
+     * to toggle the switches
+     */
+    void toggle();
 
 signals:
     void statusUpdated();
@@ -82,24 +94,34 @@ signals:
     // emitted when the zero has not send status data in a while
     void stale();
 
+    /*
+     * Emitted when a switch toggle is requested
+     */
+    void toggling();
+    void toggleError();
 
 
 private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
     void onUnsubscribe(QCoapReply *reply);
 
+    void onSwitchReplyFinished(QCoapReply *reply);
+
 private:
     void subscribe();
     void initStaleDetection();
+    void getSmpDetails();
+    void loadImages();
 
     QCoapClient coapClient;
     QCoapReply* observerReply;
 
-    QStateMachine staleDetection;
+    QStateMachine proxyState;
     QTimer liveTimer;
- //   QTimer staleTimer;
- //
+    QTimer toggleTimer;
+    
     bool stale_;
+    bool live_;
     
 
     QUrl url_;
@@ -117,6 +139,9 @@ private:
     uint32_t vRms_;
     uint32_t cRms_;
 
+    ::smp::SmpClient smpClient;
+    std::shared_ptr<smp::SmpReply> smpReply;
+    std::vector<::smp::ImageSlot> fwSlots;
 };
 
 } // end namespace

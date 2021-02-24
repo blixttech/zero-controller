@@ -1,45 +1,42 @@
-#include "zeroliveviewmodel.hpp"
+#include "zeromanagementviewmodel.hpp"
 #include <QBrush>
 
 namespace zero {
 
-std::vector<QString> ZeroLiveViewModel::headers({
+std::vector<QString> ZeroManagementViewModel::headers({
         QT_TR_NOOP("UUID"),
-        QT_TR_NOOP("Status"),
-        QT_TR_NOOP("Vᵣₘₛ"),
-        QT_TR_NOOP("Iᵣₘₛ"),
-        QT_TR_NOOP("OCP"),
-        QT_TR_NOOP("OTP"),
-        QT_TR_NOOP("Uptime(s)")
+        QT_TR_NOOP("IP"),
+        QT_TR_NOOP("Firmware Slot 0"),
+        QT_TR_NOOP("Firmware Slot 1")
 });
 
-ZeroLiveViewModel::ZeroLiveViewModel(std::shared_ptr<ZeroList> zList, QObject *parent) :
+ZeroManagementViewModel::ZeroManagementViewModel(std::shared_ptr<ZeroList> zList, QObject *parent) :
     QAbstractTableModel(parent),
     zList(zList)
 {
     connect(zList.get(), &ZeroList::beforeAddingZero,
-            this, &ZeroLiveViewModel::beforeAddingZero);
+            this, &ZeroManagementViewModel::beforeAddingZero);
     connect(zList.get(), &ZeroList::zeroAdded,
-            this, &ZeroLiveViewModel::zeroAdded);
+            this, &ZeroManagementViewModel::zeroAdded);
     connect(zList.get(), &ZeroList::zeroUpdated,
-            this, &ZeroLiveViewModel::zeroUpdated);
+            this, &ZeroManagementViewModel::zeroUpdated);
     connect(zList.get(), &ZeroList::beforeErasingZero,
-            this, &ZeroLiveViewModel::beforeErasingZero);
+            this, &ZeroManagementViewModel::beforeErasingZero);
     connect(zList.get(), &ZeroList::zeroErased,
-            this, &ZeroLiveViewModel::zeroErased);
+            this, &ZeroManagementViewModel::zeroErased);
 }
 
-int ZeroLiveViewModel::rowCount(const QModelIndex &parent) const
+int ZeroManagementViewModel::rowCount(const QModelIndex &parent) const
 {
     return zList->zeros().size();
 }
 
-int ZeroLiveViewModel::columnCount(const QModelIndex &parent) const
+int ZeroManagementViewModel::columnCount(const QModelIndex &parent) const
 {
     return headers.size();
 }
 
-QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
+QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
@@ -56,17 +53,16 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 case 0:
                     return zList->zeros()[row]->uuid(); 
                 case 1:
-                    return zList->zeros()[row]->closed();// ? tr("Closed") : tr("Open");
+                    return zList->zeros()[row]->host();// ? tr("Closed") : tr("Open");
                 case 2:
-                    return QString::number(zList->zeros()[row]->voltageRms());
+                    return zList->zeros()[row]->slotInfo(0);
                 case 3:
-                    return QString::number(zList->zeros()[row]->currentRms());
-                case 6:
-                    return QString::number(zList->zeros()[row]->uptime());
+                    return zList->zeros()[row]->slotInfo(1);
                 default:
                    return QVariant(); 
             }
         }
+#if 0
         /*case Qt::FontRole:
             if (row == 0 && col == 0) { //change font only for cell(0,0)
                 QFont boldFont;
@@ -98,11 +94,13 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
             else if (5 == col)
                 return Qt::Unchecked;
             break;
+#endif            
     }
     return QVariant();
 }
 
-bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
+#if 0
+bool ZeroManagementViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (Qt::EditRole != role) return false;
 
@@ -116,7 +114,7 @@ bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value,
     return true;
 }
 
-Qt::ItemFlags ZeroLiveViewModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ZeroManagementViewModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
@@ -131,8 +129,9 @@ Qt::ItemFlags ZeroLiveViewModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 
 }
+#endif
 
-QVariant ZeroLiveViewModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant ZeroManagementViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
         return QVariant();
@@ -146,18 +145,18 @@ QVariant ZeroLiveViewModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
-void ZeroLiveViewModel::beforeAddingZero(int newRow)
+void ZeroManagementViewModel::beforeAddingZero(int newRow)
 {
     beginInsertRows(QModelIndex(), newRow, newRow);
 }
 
-void ZeroLiveViewModel::zeroAdded(int newRow)
+void ZeroManagementViewModel::zeroAdded(int newRow)
 {
     // datasource was externally updated
     endInsertRows();
 }
 
-void ZeroLiveViewModel::zeroUpdated(int updatedRow)
+void ZeroManagementViewModel::zeroUpdated(int updatedRow)
 {
     auto topLeft = createIndex(updatedRow,0);
     auto bottomRight = createIndex(updatedRow,columnCount());
@@ -165,12 +164,12 @@ void ZeroLiveViewModel::zeroUpdated(int updatedRow)
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }
 
-void ZeroLiveViewModel::beforeErasingZero(int removedRow)
+void ZeroManagementViewModel::beforeErasingZero(int removedRow)
 {
     beginRemoveRows(QModelIndex(), removedRow, removedRow);
 }
 
-void ZeroLiveViewModel::zeroErased(int removedRow)
+void ZeroManagementViewModel::zeroErased(int removedRow)
 {
     // datasource was externally updated
     endRemoveRows();
