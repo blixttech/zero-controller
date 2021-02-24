@@ -87,6 +87,9 @@ bool CoapResourceDiscovery::start(uint32_t interval)
     }
     QObject::connect(pData_->socket, &QUdpSocket::readyRead, this, &CoapResourceDiscovery::onReadyRead);
 
+    // start immediately
+    onDiscoveryTimer();
+
     pData_->timer = new QTimer(this);
     QObject::connect(pData_->timer, &QTimer::timeout, this, &CoapResourceDiscovery::onDiscoveryTimer);
     pData_->timer->start(interval);
