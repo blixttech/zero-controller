@@ -240,14 +240,18 @@ void ZeroProxy::toggle()
 
     QUrl url(url_);
     url.setPath("/switch");
+    QUrlQuery params;
+    params.addQueryItem("a", "toggle");
+    url.setQuery(params);
     
-    auto reply = coapClient.get(url);
+    auto reply = coapClient.post(url);
     connect(reply, &QCoapReply::finished, this, &ZeroProxy::onSwitchReplyFinished);
     emit toggling();
 }
 
 void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
 {
+    reply->deleteLater();
     if (reply->errorReceived() == QtCoap::Error::Ok)
     {
         qDebug() << "TOGGLE OK";
