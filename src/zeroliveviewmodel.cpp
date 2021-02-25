@@ -62,7 +62,7 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 case 3:
                     return QString::number(zList->zeros()[row]->currentRms() / 1000.0);
                 case 6:
-                    return QString::number(zList->zeros()[row]->uptime());
+                    return QString::number(zList->zeros()[row]->uptime() / 1000.0);
                 default:
                    return QVariant(); 
             }
