@@ -88,10 +88,12 @@ void OpenCloseButtonDelegate::setEditorData(QWidget *editor, const QModelIndex &
     if (index.model()->data(index, Qt::DisplayRole).toBool())
     {
         openCloseButton->setText(tr("Closed"));
+        openCloseButton->setStyleSheet("QPushButton{ background-color: red }");
     }
     else
     {
         openCloseButton->setText(tr("Open"));
+        openCloseButton->setStyleSheet("QPushButton{ background-color: green }");
     }
 
     //QStyledItemDelegate::setEditorData(baseEditor,index);
