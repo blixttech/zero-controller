@@ -14,7 +14,9 @@ NetworkInterfaceList::NetworkInterfaceList(QObject *parent) :
     for (auto i = interfaceList.begin(); i != interfaceList.end(); ++i)
     {
         if (!((QNetworkInterface::Ethernet == i->type()) 
-                || (QNetworkInterface::Virtual == i->type())))
+                || (QNetworkInterface::Virtual == i->type())
+                || (QNetworkInterface::Wifi == i->type())
+            ))
             continue;
 
         int mask = QNetworkInterface::IsUp | QNetworkInterface::CanBroadcast;
