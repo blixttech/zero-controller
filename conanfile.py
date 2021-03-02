@@ -53,6 +53,7 @@ class BZControllerConan(ConanFile):
         self.requires("qt/5.14.2@bincrafters/stable")
         self.requires("qtsvg/5.14.2@blixt/stable")
         self.requires("qtcoap/5.14.2@blixt/stable")
+        #self.requires("linuxdeploy-bundle-qt/continuous@bincreators/stable")
 
     def _configure_cmake(self):
         if not self._cmake:
@@ -85,8 +86,38 @@ class BZControllerConan(ConanFile):
             raise ConanException("Deploying is not supported for %s" % self.settings.os)
 
     def _package_linux(self):
+        print ("HERE")
         self.copy("*", dst="app.dir", src="app.dir")
         self.copy("*", dst=os.path.join("app.dir", "usr", "bin"), src="bin")
 
     def _deploy_linux(self):
         self.copy("*", dst="app.dir", src="app.dir")
+        
+        print ("HERE")
+        linuxdeploy_args = []
+        linuxdeploy_args.append("--appdir")
+        linuxdeploy_args.append(os.path.join(self.install_folder, "app.dir"))
+        linuxdeploy_args.append("--plugin")
+        linuxdeploy_args.append("qt")
+        # libxkbcommon* libraries from conan causes problems in Qt when loading keyboard information.
+        # Looks like libxkbcommon* libraries are included in most of the Linux distributions.
+        # So we have to delete libxkbcommon* libraries discovered by linuxdeploy prior to create the
+        # appimage.
+        # Therefore, we create the appimage in a later step using linuxdeploy-plugin-appimage.   
+        appimage_args = []
+        appimage_args.append("--appdir")
+        appimage_args.append(os.path.join(self.install_folder, "app.dir"))
+
+        deploy_env = {"NO_STRIP": "1"}
+        deploy_env["OUTPUT"] = "{0}-{1}.AppImage".format(self.name, self.settings.arch)
+        with tools.environment_append(deploy_env):
+            self.run("linuxdeploy %s" % " ".join(linuxdeploy_args), run_environment=True)
+            self.run("rm -rf %s" % os.path.join(self.install_folder, 
+                                                "app.dir", 
+                                                "usr", 
+                                                "lib", 
+                                                "libxkbcommon*"), 
+                    run_environment=True) 
+            self.run("linuxdeploy-plugin-appimage %s" % " ".join(appimage_args), run_environment=True)
+
+        
