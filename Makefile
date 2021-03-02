@@ -48,9 +48,9 @@ run_conan: setup
 
 pack: $(PACKAGE_TOOLS)
 	conan package $(PROJECT_DIR) --build-folder $(BUILD_DIR) --package-folder $(PACKAGE_DIR)
-	$(LINUXDPLY_TOOL) --appdir=$(PACKAGE_DIR)/app.dir --plugin=qt
+	NO_STRIP=1 $(LINUXDPLY_TOOL) --appdir=$(PACKAGE_DIR)/app.dir --plugin=qt --output appimage
 #	rm -rf $(PACKAGE_DIR)/app.dir $(PACKAGE_DIR)/usr $(PACKAGE_DIR)/lib $(PACKAGE_DIR)/libxkbcommon*
-	$(LINUXDPLYQT_TOOL) --appdir=$(PACKAGE_DIR)/app.dir
+#	$(LINUXDPLYQT_TOOL) --appdir=$(PACKAGE_DIR)/app.dir
 
 release: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-release run_conan pack
 
