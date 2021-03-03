@@ -72,7 +72,6 @@ QWidget* OpenCloseButtonDelegate::createEditor(QWidget *parent, const QStyleOpti
     QPushButton* openCloseButton = new QPushButton(parent);
     openCloseButton->setObjectName("openCloseButton");
     openCloseButton->setGeometry(0, 0, option.rect.width(),option.rect.height());
-//    openCloseButton->setCheckable(true);
 
     connect(openCloseButton,&QPushButton::clicked,
             this, &OpenCloseButtonDelegate::sendCommitData);
@@ -117,6 +116,13 @@ void OpenCloseButtonDelegate::sendCommitData()
 {
     auto *editor = qobject_cast<QPushButton *>(sender());
     emit commitData(editor);
+}
+
+bool OpenCloseButtonDelegate::eventFilter(QObject *editor, QEvent *event)
+{
+    if (event->type() == QEvent::FocusOut) return false;
+
+    return QStyledItemDelegate::eventFilter(editor, event);
 }
 
 } // end namespace 

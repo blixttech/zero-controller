@@ -12,7 +12,8 @@ ZeroLiveViewTab::ZeroLiveViewTab(QWidget* parent) : QWidget(parent),
     zeroTable->setObjectName(QString::fromUtf8("zeroTable"));
     zeroTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     zeroTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    zeroTable->setEditTriggers(QTableView::AllEditTriggers);
+    //zeroTable->setEditTriggers(QTableView::AllEditTriggers);
+//    zeroTable->setEditTriggers(QTableView::DoubleClicked);
     zeroTable->setItemDelegateForColumn(1,new OpenCloseButtonDelegate(zeroTable));
     
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -27,13 +28,10 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
     connect(model, &ZeroLiveViewModel::rowsInserted, 
             [=](const QModelIndex &parent, int first, int last)
             {
-                qDebug() << "In here";
                 for ( int i = first; i <= last; ++i )
                 {
-                    qDebug() << "In here loop";
                     zeroTable->openPersistentEditor( model->index(i,1) );
                 }
-                qDebug() << "In here out";
             });
 }
 
