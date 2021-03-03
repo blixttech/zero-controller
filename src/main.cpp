@@ -53,7 +53,7 @@ void processCmdArgs(zero::Config& config)
         "Log level \n 1:fatal, 2:critical, 3:warning, 4:info, 5:debug", "log-level");
     parser.addOption(logLevelOpt);
 
-    parser.parse(QCoreApplication::arguments());
+    parser.process(QCoreApplication::arguments());
 
     qDebug() << "Starting Application";
     if (parser.isSet(cfgFileOpt)) {
