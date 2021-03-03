@@ -43,7 +43,7 @@ void MainWindowUI::setupMainTabs(QMainWindow* mainWindow)
     liveView = new ZeroLiveViewTab(mainTabs);
     mgmtView = new ZeroManagementViewTab(mainTabs);
     mainTabs->addTab(liveView, tr("Live"));
-    mainTabs->addTab(mgmtView, tr("Manage"));
+    mainTabs->addTab(mgmtView, tr("Admin"));
 }
 
 void MainWindowUI::setupToolBar(QMainWindow* mainWindow)
