@@ -22,15 +22,6 @@ ZeroManagementViewTab::ZeroManagementViewTab(QWidget* parent) : QWidget(parent),
 void ZeroManagementViewTab::setModel(ZeroManagementViewModel* model)
 {
     zeroTable->setModel(model);
-
-/*    connect(model, &ZeroManagementViewModel::rowsInserted, 
-            [=](const QModelIndex &parent, int first, int last)
-            {
-                for ( int i = first; i <= last; ++i )
-                {
-                    zeroTable->openPersistentEditor( model->index(i,1) );
-                }
-            });*/
 }
 
 } // end namespace

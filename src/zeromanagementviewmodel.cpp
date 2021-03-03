@@ -55,9 +55,9 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
                 case 1:
                     return zList->zeros()[row]->host();// ? tr("Closed") : tr("Open");
                 case 2:
-                    return zList->zeros()[row]->slotInfo(0);
+                    return zList->zeros()[row]->fwSlotInfo(0);
                 case 3:
-                    return zList->zeros()[row]->slotInfo(1);
+                    return zList->zeros()[row]->fwSlotInfo(1);
                 default:
                    return QVariant(); 
             }

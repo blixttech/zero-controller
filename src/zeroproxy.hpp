@@ -26,18 +26,6 @@ public:
         OCP_TEST
     };
 
-    enum class TemperatureSensor : uint8_t {
-        POWER_IN = 0,
-        POWER_OUT,
-        AMBIENT,
-        MCU
-    };
-
-    enum class Emergency : uint8_t {
-        OVERCURRENT = 0,
-        OVERTEMPERATURE
-    };
-
     ZeroProxy(const QUrl& url,
             const QString& uuid,
             const QString& hardwareVersion,
@@ -56,10 +44,8 @@ public:
     uint32_t current() const;
     uint32_t voltageRms() const;
     uint32_t currentRms() const;
-//    int8_t temperature(TemperatureSensor sensor);
-    bool ocpActivated() const;
-    bool otpActivated() const;
     bool closed() const;
+
 
     QString name() const;
 //    uint32_t lastTimestamp();
@@ -68,9 +54,12 @@ public:
 
     uint32_t uptime() const;
 
-    QString slotInfo(uint32_t slot) const;
+    QString fwSlotInfo(uint32_t slot) const;
     
-
+    uint32_t powerInTemp() const;
+    uint32_t powerOutTemp() const;
+    uint32_t ambientTemp() const;
+    uint32_t mcuTemp() const;
 
     bool isStale() const;
     bool isLive() const;
@@ -138,6 +127,11 @@ private:
     uint32_t uptime_;
     uint32_t vRms_;
     uint32_t cRms_;
+
+    uint32_t powerInTemp_;
+    uint32_t powerOutTemp_;
+    uint32_t ambientTemp_;
+    uint32_t mcuTemp_;
 
     ::smp::SmpClient smpClient;
     std::shared_ptr<smp::SmpReply> smpReply;

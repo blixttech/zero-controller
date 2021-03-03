@@ -21,6 +21,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     updateInterval_(100),
     closed_(false), ocpActivated_(false), otpActivated_(false),
     uptime_(0), vRms_(0), cRms_(0),
+    powerInTemp_(0), powerOutTemp_(0), ambientTemp_(0), mcuTemp_(0),
     smpClient(url.host(),1337),
     smpReply(), fwSlots()
 {
@@ -212,11 +213,18 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     qDebug() << "Message payload " << message.payload();
 
     /* Message format is a CSV, fields are
-     *       k_uptime_get_32(), (uint8_t)bcb_is_on(), (uint8_t)0U, (uint8_t)0U,
-		     bcb_get_current(), bcb_get_current_rms(), bcb_get_voltage(),
-		     bcb_get_voltage_rms(), bcb_get_temp(BCB_TEMP_SENSOR_PWR_IN),
-		     bcb_get_temp(BCB_TEMP_SENSOR_PWR_OUT), bcb_get_temp(BCB_TEMP_SENSOR_AMB),
-		     bcb_get_temp(BCB_TEMP_SENSOR_MCU));
+     * 0      k_uptime_get_32(), 
+     * 1      (uint8_t)bcb_is_on(), 
+     * 2      (uint8_t)0U, 
+     * 3      (uint8_t)0U,
+     * 4      bcb_get_current(), 
+     * 5      bcb_get_current_rms(), 
+     * 6      bcb_get_voltage(),
+     * 7      bcb_get_voltage_rms(), 
+     * 8      bcb_get_temp(BCB_TEMP_SENSOR_PWR_IN),
+     * 9      bcb_get_temp(BCB_TEMP_SENSOR_PWR_OUT), 
+     * 10     bcb_get_temp(BCB_TEMP_SENSOR_AMB),
+     * 11     bcb_get_temp(BCB_TEMP_SENSOR_MCU));
      */
 
     const QList<QByteArray> values = message.payload().split(',');
@@ -230,6 +238,10 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     cRms_ = QString::fromUtf8(values[5]).toUInt();
     vRms_ = QString::fromUtf8(values[7]).toUInt();
 
+    powerInTemp_ = QString::fromUtf8(values[8]).toUInt();
+    powerOutTemp_ = QString::fromUtf8(values[9]).toUInt();
+    ambientTemp_ = QString::fromUtf8(values[10]).toUInt();
+    mcuTemp_ = QString::fromUtf8(values[11]).toUInt();
 
     emit statusUpdated();
 }
@@ -290,13 +302,33 @@ void ZeroProxy::loadImages()
     smpReply.reset();
 }
 
-QString ZeroProxy::slotInfo(uint32_t sidx) const
+QString ZeroProxy::fwSlotInfo(uint32_t sidx) const
 {
     if (sidx > 1) return "";
     if (fwSlots.size() < sidx+1) return "Empty";
 
     auto &s = fwSlots[sidx];
     return "Version: " + s.version + " active: " + (s.active ? "Yes" : "No");
+}
+
+uint32_t ZeroProxy::powerInTemp() const
+{
+    return powerInTemp_;
+}
+
+uint32_t ZeroProxy::powerOutTemp() const
+{
+    return powerOutTemp_;
+}
+
+uint32_t ZeroProxy::ambientTemp() const
+{
+    return ambientTemp_;
+}
+
+uint32_t ZeroProxy::mcuTemp() const
+{
+    return mcuTemp_;
 }
 
 } // end namespace
