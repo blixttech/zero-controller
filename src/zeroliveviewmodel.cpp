@@ -6,6 +6,7 @@ namespace zero {
 std::vector<QString> ZeroLiveViewModel::headers({
         QT_TR_NOOP("UUID"),
         QT_TR_NOOP("Status"),
+        QT_TR_NOOP("Last Trigger"),
         QT_TR_NOOP("Vᵣₘₛ(V)"),
         QT_TR_NOOP("Iᵣₘₛ(A)"),
         QT_TR_NOOP("Uptime"),
@@ -51,6 +52,15 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
 
     switch (role) 
     {
+        case Qt::ToolTipRole:
+            switch(col) 
+            {
+                case 0:
+                    return zList->zeros()[row]->uuid(); 
+                case 2:
+                    return zList->zeros()[row]->lastTransitionReasonStr();
+            }
+            break;
         case Qt::DisplayRole:
         {
             switch(col) 
@@ -60,10 +70,12 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 case 1:
                     return zList->zeros()[row]->closed();// ? tr("Closed") : tr("Open");
                 case 2:
-                    return QString::number(zList->zeros()[row]->voltageRms() / 1000.0);
+                    return zList->zeros()[row]->lastTransitionReasonStr();
                 case 3:
-                    return QString::number(zList->zeros()[row]->currentRms() / 1000.0);
+                    return QString::number(zList->zeros()[row]->voltageRms() / 1000.0);
                 case 4:
+                    return QString::number(zList->zeros()[row]->currentRms() / 1000.0);
+                case 5:
                     {
                         uint32_t up = zList->zeros()[row]->uptime();
                         uint32_t msecs = up % 1000;
@@ -79,13 +91,13 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                                       .arg(seconds, 2, 10, QChar('0'))
                                       .arg(msecs, 2, 10, QChar('0'));
                     }
-                case 5:
-                    return QString::number(zList->zeros()[row]->powerInTemp());
                 case 6:
-                    return QString::number(zList->zeros()[row]->powerOutTemp());
+                    return QString::number(zList->zeros()[row]->powerInTemp());
                 case 7:
-                    return QString::number(zList->zeros()[row]->ambientTemp());
+                    return QString::number(zList->zeros()[row]->powerOutTemp());
                 case 8:
+                    return QString::number(zList->zeros()[row]->ambientTemp());
+                case 9:
                     return QString::number(zList->zeros()[row]->mcuTemp());
                 default:
                    return QVariant(); 

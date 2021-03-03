@@ -19,11 +19,13 @@ class ZeroProxy : public QObject
     Q_OBJECT
 public:
 
-    enum class Status : uint8_t {
-        NONE = 0,
-        OPEN,
-        CLOSE,
-        OCP_TEST
+    enum class OpenCloseTransition : uint8_t {
+        NONE = 0, // only during initialisation
+        EXT = 1, // external request, button or coap
+        OCP = 2, // over current protection
+        OTP = 3, // over temperature protection
+        OCP_TEST = 4, // over current test
+        UVP = 5 // under voltage protection
     };
 
     ZeroProxy(const QUrl& url,
@@ -46,6 +48,8 @@ public:
     uint32_t currentRms() const;
     bool closed() const;
 
+    OpenCloseTransition lastTransitionReason() const;
+    QString lastTransitionReasonStr() const;
 
     QString name() const;
 //    uint32_t lastTimestamp();
@@ -132,6 +136,7 @@ private:
     uint32_t powerOutTemp_;
     uint32_t ambientTemp_;
     uint32_t mcuTemp_;
+    OpenCloseTransition lastTransReason_;
 
     ::smp::SmpClient smpClient;
     std::shared_ptr<smp::SmpReply> smpReply;

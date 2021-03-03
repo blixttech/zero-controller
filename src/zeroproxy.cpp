@@ -22,6 +22,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     closed_(false), ocpActivated_(false), otpActivated_(false),
     uptime_(0), vRms_(0), cRms_(0),
     powerInTemp_(0), powerOutTemp_(0), ambientTemp_(0), mcuTemp_(0),
+    lastTransReason_(OpenCloseTransition::NONE),
     smpClient(url.host(),1337),
     smpReply(), fwSlots()
 {
@@ -178,7 +179,32 @@ bool ZeroProxy::closed() const
 {
     return closed_;
 }
+
+ZeroProxy::OpenCloseTransition ZeroProxy::lastTransitionReason() const
+{
+    return lastTransReason_;
+}
     
+QString ZeroProxy::lastTransitionReasonStr() const
+{
+    switch (lastTransReason_)
+    {
+        case OpenCloseTransition::NONE:
+            return "Initialization";
+        case OpenCloseTransition::EXT:
+            return "User requested";
+        case OpenCloseTransition::OCP:
+            return "Overcurrent protection";
+        case OpenCloseTransition::OTP:
+            return "Overtemperature protection";
+        case OpenCloseTransition::OCP_TEST:
+            return "Overcurrent protection test";
+        case OpenCloseTransition::UVP:
+            return "Undervoltage protection";
+    }
+    return "Unknown";
+}
+
 uint32_t ZeroProxy::voltageRms() const
 {
     return vRms_;
@@ -215,8 +241,8 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     /* Message format is a CSV, fields are
      * 0      k_uptime_get_32(), 
      * 1      (uint8_t)bcb_is_on(), 
-     * 2      (uint8_t)0U, 
-     * 3      (uint8_t)0U,
+     * 2      (uint8_t), cause for last switch state transition 
+     * 3      (uint8_t), trip curve state
      * 4      bcb_get_current(), 
      * 5      bcb_get_current_rms(), 
      * 6      bcb_get_voltage(),
@@ -228,13 +254,24 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
      */
 
     const QList<QByteArray> values = message.payload().split(',');
-    if (values.length() < 12) {
+    if (values.length() < 12) 
+    {
         qWarning() << "Invalid version format in Zero Status update message";
         return;
     }
 
     uptime_ = QString::fromUtf8(values[0]).toUInt();
     closed_ = QString::fromUtf8(values[1]).toInt();
+    uint8_t tmp = QString::fromUtf8(values[2]).toUInt();
+    if (tmp > 5)
+    {
+        qWarning() << "Invalid OpenCloseTransition reason";
+    }
+    else 
+    {
+        lastTransReason_ = static_cast<OpenCloseTransition>(tmp);
+    }
+
     cRms_ = QString::fromUtf8(values[5]).toUInt();
     vRms_ = QString::fromUtf8(values[7]).toUInt();
 
