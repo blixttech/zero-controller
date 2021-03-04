@@ -69,8 +69,7 @@ void ZeroCoapScanner::onVersionReply(QCoapReply *reply)
 
 void ZeroCoapScanner::onVersionError(QCoapReply *reply, QtCoap::Error error)
 {
-    reply->deleteLater();
-    qDebug() << "Invalid version reply received";
+    qWarning() << "Invalid version reply received";
 }
 
 bool ZeroCoapScanner::parseVersion(QCoapReply *reply, QUrl& url, QString& uuid, 
