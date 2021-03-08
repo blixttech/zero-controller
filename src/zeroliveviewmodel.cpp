@@ -152,22 +152,6 @@ bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value,
     return true;
 }
 
-Qt::ItemFlags ZeroLiveViewModel::flags(const QModelIndex &index) const
-{
-    if (!index.isValid())
-        return Qt::NoItemFlags;
-    int col = index.column();
-    int row = index.row();
-
-    if (zList->zeros()[row]->isLive() && (1 == col))
-        return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-
-    if (1 == col)
-        qDebug() << "Stale";
-    return QAbstractItemModel::flags(index);
-
-}
-
 QVariant ZeroLiveViewModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
