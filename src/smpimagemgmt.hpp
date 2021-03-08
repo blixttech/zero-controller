@@ -65,7 +65,7 @@ struct ImageSlot
 
 struct ImageMgmtStatePayload : public SmpPayload
 {
-    bool deserialize(QByteArray& reader) override;
+    bool deserialize(const QByteArray& reader) override;
     std::vector<ImageSlot> fwSlots;
 };
 

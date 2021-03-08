@@ -4,12 +4,11 @@
 
 namespace smp {
 
-SmpReply::SmpReply(SmpHeader reqHdr, QObject* parent) : 
-    QObject(parent),   
-    header(reqHdr),
-    payload(),
-    encodedMsg()
+SmpReply::SmpReply(const QByteArray& data) : 
+    encodedMsg(data),
+    status_(Status::Unknown)
 {
+    deserialize(data);
 }
 
 void printHdr(MgmtHeader& thd)
@@ -20,57 +19,37 @@ void printHdr(MgmtHeader& thd)
              << "nh_id: " << thd.nh_id;
 }
 
-bool SmpReply::deserialize(QByteArray& data, bool checkHeader)
+void SmpReply::deserialize(const QByteArray& di)
 {
-    SmpHeader tHdr;
-
-    if (!tHdr.deserialize(data)) 
-    {
-        qDebug() << "SmpRely: Invalid header";
-        return false;
-    }
-    
-    auto &thd = tHdr.header;
+    QByteArray data(di);
     auto &rhd = header.header;
-    if (checkHeader)
+    if (!header.deserialize(data)) 
     {
-        if ((thd.nh_op != rhd.nh_op) ||
-            (thd.nh_group != rhd.nh_group) ||
-            (thd.nh_seq != rhd.nh_seq) ||
-            (thd.nh_id != rhd.nh_id))
-        {
-            qDebug() << "SmpRely: Packet not matching expect header";
-            qDebug() << "Received:";
-            printHdr(thd);
-            qDebug() << "Expected:";
-            printHdr(rhd);        
-            return false;
-        }
-    }
-    rhd = thd;
+        qDebug() << "SmpReply: Invalid header";
+        status_ = Status::Invalid_Header;
+        return;
+    } 
 
     if (data.length() < rhd.nh_len)
     {
         qDebug() << "Payload is missing data";
-        return false;
+        status_ = Status::Missing_Payload;
+        return;
     } 
    
     qDebug() << "Completed the message parsing"; 
-    payload.append(data.data()+sizeof(rhd), rhd.nh_len); 
-    return true;
+    payload.append(data.data()+sizeof(rhd), rhd.nh_len);
+    status_ = Status::Ok; 
 }
 
-void SmpReply::addData(const QByteArray& data)
-{
-    encodedMsg.append(data); 
-    if (!deserialize(encodedMsg)) return;
-    emit finished();
-    
-}
-
-bool SmpReply::getPayload(SmpPayload& pyl)
+bool SmpReply::getPayload(SmpPayload& pyl) const
 {
     return pyl.deserialize(payload);
+}
+
+SmpReply::Status SmpReply::status() const
+{
+    return status_;
 }
 
 } // end of namespace

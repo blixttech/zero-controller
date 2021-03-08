@@ -143,7 +143,7 @@ bool deserializeImageSlot(QCborStreamReader& reader, ImageSlot& slot)
     return true;
 }
 
-bool ImageMgmtStatePayload::deserialize(QByteArray& data)
+bool ImageMgmtStatePayload::deserialize(const QByteArray& data)
 {
     QCborStreamReader reader(data);
     /* Layout

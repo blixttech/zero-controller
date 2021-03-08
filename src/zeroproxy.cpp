@@ -15,7 +15,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
             QObject *parent) : QObject(parent),
     coapClient(QtCoap::SecurityMode::NoSecurity),
     observerReply(nullptr), proxyState(),
-    liveTimer(), stale_(false), live_(false), //toggleTimer(),
+    liveTimer(),  state_(ConnectionState::Offline), //toggleTimer(),
     url_(url), uuid_(uuid), hardwareVersion_(hardwareVersion),
     macAddress_(macAddress), name_(""),
     updateInterval_(100),
@@ -24,9 +24,10 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     powerInTemp_(0), powerOutTemp_(0), ambientTemp_(0), mcuTemp_(0),
     lastTransReason_(OpenCloseTransition::NONE),
     smpClient(url.host(),1337),
-    smpReply(), fwSlots()
+    fwSlots()
 {
-    getSmpDetails();
+    connect(&smpClient, &smp::SmpClient::replyReceived, this, &ZeroProxy::processSmpReply);
+    initStaleDetection();
 }
 
 ZeroProxy::~ZeroProxy()
@@ -36,89 +37,178 @@ ZeroProxy::~ZeroProxy()
 
 void ZeroProxy::subscribe()
 {
+    qDebug() << "Sending subscribe request";
     auto oUrl = url_;
     oUrl.setPath("/status");
     QUrlQuery params;
     params.addQueryItem("p", QString::number(updateInterval_));
     oUrl.setQuery(params);
 
+    if (nullptr != observerReply)
+        observerReply->deleteLater();
+
     observerReply = coapClient.observe(oUrl);
     connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
+}
+
+void setupTimer(QTimer& timer, uint32_t interval, QState* from, QAbstractState* to)
+{
+    timer.setInterval(interval);
+    from->addTransition(&timer, &QTimer::timeout, to);
 }
 
 void ZeroProxy::initStaleDetection()
 {
     qDebug() << "Configure statemachine";
-    QState* live_state = new QState(); 
-    QState* stale_state = new QState();
-    QState* toggling_state = new QState();
-//    QFinalState* dead = new QFinalState();
+    auto connect_state = new QState();
+    auto smpinfo_state = new QState();
+    auto subscribe_state = new QState();
+    auto stale_state = new QState();
+    auto live_state = new QState(); 
+    auto shutdown_state = new QState(); 
+    auto stopped_state = new QFinalState();
 
-    liveTimer.setSingleShot(true);
-    liveTimer.setInterval(20*updateInterval_);
-    live_state->addTransition(&liveTimer, &QTimer::timeout, stale_state);
-    live_state->addTransition(this, &ZeroProxy::statusUpdated, live_state);
-    live_state->addTransition(this, &ZeroProxy::toggling, toggling_state);
-    connect(live_state, &QState::entered, 
+    // 1. ConnectState (also starting state)
+    setupTimer(connectTimer, 10000, connect_state, connect_state);
+    connect_state->addTransition(&smpClient, &smp::SmpClient::connectionEstablished, smpinfo_state);
+    connect(connect_state, &QState::entered,
             [&]()
             {
-                qDebug() << "Entering live";
-                liveTimer.start();
-                live_ = true;
+                qDebug() << "Entering connect";
+                state_ = ConnectionState::Offline;
+                connectTimer.start();
+                smpClient.connect();
             }
     );
-    
-    connect(live_state, &QState::exited, 
+    connect(connect_state, &QState::exited,
             [&]()
             {
-                qDebug() << "Leaving live";
-                live_ = false;
+                qDebug() << "Leaving connect";
+                connectTimer.stop();
             }
     );
+    proxyState.addState(connect_state);
 
-    stale_state->addTransition(this, &ZeroProxy::statusUpdated, live_state);
+    // 2. SmpInfo State
+    setupTimer(smpTimer, 10000, smpinfo_state, smpinfo_state);
+    smpinfo_state->addTransition(this, &ZeroProxy::receivedSmpInfo, subscribe_state);
+    connect(smpinfo_state, &QState::entered,
+            [&]() 
+            {
+                qDebug() << "Entering smpinfo";
+                smpTimer.start();
+                requestSmpInfo();
+                state_ = ConnectionState::Connected;
+            }
+    );
+    connect(smpinfo_state, &QState::exited,
+            [&]() 
+            {
+                qDebug() << "Exiting smpinfo";
+                smpTimer.stop();
+            }
+    );
+    proxyState.addState(smpinfo_state);
+   
+    // 3. the subscribe state
+    setupTimer(subscribeTimer, 10000, subscribe_state, stale_state); 
+    subscribe_state->addTransition(this, &ZeroProxy::live, live_state);
+    subscribe_state->addTransition(this, &ZeroProxy::subscriptionRefused, stale_state);
+    connect(subscribe_state, &QState::entered,
+            [&]()
+            {
+                qDebug() << "Entered subscribe";
+                subscribeTimer.start();
+                subscribe();    
+            }
+    );
+    connect(subscribe_state, &QState::exited,
+            [&]()
+            {
+                qDebug() << "Exiting subscribe";
+                subscribeTimer.stop();
+            }
+    );
+    proxyState.addState(subscribe_state);
+  
+    // 4. stale state
+    QTimer *st = new QTimer(stale_state); 
+    setupTimer(*st, 60*1000, stale_state, stopped_state);
+    stale_state->addTransition(this, &ZeroProxy::live, live_state);
+    // device might have rebooted
+    stale_state->addTransition(this, &ZeroProxy::newUrl, stopped_state);
+    stale_state->addTransition(this, &ZeroProxy::shutdownRequested, stopped_state);
+
+    connect(stale_state, &QState::entered, st, static_cast<void (QTimer::*)()>(&QTimer::start)); 
+    connect(stale_state, &QState::exited, st, &QTimer::stop); 
+
     connect(stale_state, &QState::entered, 
             [&]()
             {
                 qDebug() << "Entering stale";
-                stale_ = true;
-                emit this->stale();
+                state_ = ConnectionState::Stale;
+                emit this->statusUpdated();
             }
     );
     connect(stale_state, &QState::exited, 
             [&]()
             {
-                stale_ = false;
                 qDebug() << "Leaving stale";
             }
     );
-
-    toggleTimer.setSingleShot(true); 
-    toggleTimer.setInterval(20*updateInterval_);
-    toggling_state->addTransition(&toggleTimer, &QTimer::timeout, stale_state);
-    toggling_state->addTransition(this, &ZeroProxy::statusUpdated, live_state);
-    toggling_state->addTransition(this, &ZeroProxy::toggleError, live_state);
-    connect(toggling_state, &QState::entered, 
-            [&]()
-            {
-                qDebug() << "Entering toggling";
-                toggleTimer.start();
-            }
-    );
-    connect(toggling_state, &QState::exited, 
-            [&]()
-            {
-                qDebug() << "Leaving toggling";
-                toggleTimer.stop();
-            }
-    );
-    
-
-    proxyState.addState(live_state);
     proxyState.addState(stale_state);
-    proxyState.addState(toggling_state);
 
-    proxyState.setInitialState(live_state);
+    // 5. live state
+    setupTimer(liveTimer, 20*updateInterval_, live_state, stale_state);
+    live_state->addTransition(this, &ZeroProxy::live, live_state);
+    live_state->addTransition(this, &ZeroProxy::shutdownRequested, shutdown_state);
+    connect(live_state, &QState::entered, 
+            [&]()
+            {
+                qDebug() << "Entering live";
+                liveTimer.start();
+                state_ = ConnectionState::Live;
+            }
+    );
+    connect(live_state, &QState::exited, 
+            [&]()
+            {
+                qDebug() << "Leaving live";
+                liveTimer.stop();
+            }
+    );
+    proxyState.addState(live_state);
+
+    // 6. Shutdown state
+    QTimer* shutdownTimer = new QTimer(shutdown_state);
+    setupTimer(*shutdownTimer, 5 * updateInterval_, shutdown_state, stopped_state);
+    connect(shutdown_state, &QState::entered, shutdownTimer, static_cast<void (QTimer::*)()>(&QTimer::start)); 
+    connect(shutdown_state, &QState::exited, shutdownTimer, &QTimer::stop); 
+    
+    connect(shutdown_state, &QState::entered, 
+            [&, shutdown_state, stopped_state]()
+            {
+                qDebug() << "Entering shutdown";
+                if (nullptr == observerReply) return;
+                
+                shutdown_state->addTransition(observerReply, &QCoapReply::finished, stopped_state);
+                this->unsubscribe();
+            }
+    );
+    proxyState.addState(shutdown_state);
+
+    // 7. Stopped state
+    connect(stopped_state, &QState::entered, 
+            [&]()
+            {
+                state_ = ConnectionState::Stopped;
+                qDebug() << "Entering stopped";
+            }
+    );
+    proxyState.addState(stopped_state);
+    connect(&proxyState, &QStateMachine::finished, this, &ZeroProxy::stopped);
+
+    proxyState.setInitialState(connect_state);
     proxyState.start();
 }
 
@@ -127,22 +217,11 @@ void ZeroProxy::unsubscribe()
     if (nullptr == observerReply) return;
 
     coapClient.cancelObserve(observerReply);
-    connect(observerReply, &QCoapReply::finished, this, &ZeroProxy::onUnsubscribe);
 }
 
 uint32_t ZeroProxy::updateInterval() const
 {
     return updateInterval_;
-}
-
-void ZeroProxy::onUnsubscribe(QCoapReply *reply)
-{
-    if (reply->errorReceived() != QtCoap::Error::Ok)
-    {
-       return;
-    }
-    observerReply = nullptr;
-    emit unsubscribed();
 }
 
 QString ZeroProxy::host() const
@@ -153,6 +232,13 @@ QString ZeroProxy::host() const
 QUrl ZeroProxy::url() const
 {
     return url_;
+}
+
+void ZeroProxy::updateUrl(const QUrl& nUrl)
+{
+    if (nUrl == url_) return;
+    url_ = nUrl;
+    emit newUrl();
 }
 
 QString ZeroProxy::uuid() const
@@ -217,18 +303,21 @@ uint32_t ZeroProxy::currentRms() const
 
 bool ZeroProxy::isStale() const
 {
-    return stale_;
+    return (ConnectionState::Stale == state_);
 }
 
-bool ZeroProxy::isLive() const
+bool ZeroProxy::isStopped() const
 {
-    return live_;
+    return (ConnectionState::Stopped == state_);
 }
 
 void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 {
     if (reply->errorReceived() != QtCoap::Error::Ok)
        return;
+
+    qDebug() << "Responsecode: " << reply->responseCode();
+
 
     QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
     if(!format.isValid() || format.uintValue() != 0) {
@@ -281,12 +370,22 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     mcuTemp_ = QString::fromUtf8(values[11]).toUInt();
 
     emit statusUpdated();
+    
+    QCoapOption observe = message.option(QCoapOption::OptionName::Observe);
+    if (!observe.isValid())
+    {
+        qDebug() << "Subscription refused";
+        emit subscriptionRefused();
+    }
+    else
+    {
+        qDebug() << "Subscription online";
+        emit live();
+    }
 }
 
 void ZeroProxy::toggle()
 {
-    if (!isLive()) return;
-
     QUrl url(url_);
     url.setPath("/switch");
     QUrlQuery params;
@@ -295,7 +394,7 @@ void ZeroProxy::toggle()
     
     auto reply = coapClient.post(url);
     connect(reply, &QCoapReply::finished, this, &ZeroProxy::onSwitchReplyFinished);
-    emit toggling();
+    //emit toggling();
 }
 
 void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
@@ -310,33 +409,31 @@ void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
     emit toggleError();
 }
 
-void ZeroProxy::getSmpDetails()
+void ZeroProxy::requestSmpInfo()
 {
     qDebug() << "Sending SMP request";
     smp::ImageMgmtStateReq req;
-    smpReply = smpClient.send(req);
-    connect(smpReply.get(), &smp::SmpReply::finished, 
-            [=]() {
-             loadImages();
-
-            subscribe();
-            initStaleDetection();
-            });
+    auto sst = smpClient.send(req);
 }
 
-void ZeroProxy::loadImages()
+void ZeroProxy::processSmpReply(std::shared_ptr<smp::SmpReply> reply)
 {
+    if (reply->status() != smp::SmpReply::Status::Ok)
+    {
+        qWarning() << "Received invalid SmpReply";    
+        return;
+    }
+
     qDebug() << "Loading image informations";
     smp::ImageMgmtStatePayload pL;
-    if (!smpReply->getPayload(pL)) 
+    if (!reply->getPayload(pL)) 
     {
         qDebug() << "Failure when parsing Image payload";
-        smpReply.reset();
         return;
     }
 
     fwSlots = pL.fwSlots;
-    smpReply.reset();
+    emit receivedSmpInfo();
 }
 
 QString ZeroProxy::fwSlotInfo(uint32_t sidx) const
@@ -366,6 +463,11 @@ uint32_t ZeroProxy::ambientTemp() const
 uint32_t ZeroProxy::mcuTemp() const
 {
     return mcuTemp_;
+}
+
+void ZeroProxy::stop()
+{
+    emit shutdownRequested();
 }
 
 } // end namespace

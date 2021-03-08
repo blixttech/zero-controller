@@ -40,6 +40,7 @@ public:
     QString hardwareVersion() const ;
     QString hardwareAddress() const;
     QString host() const;
+
     
     // TODO: return tuple of timestamp and voltage
     uint32_t voltage() const;
@@ -54,6 +55,8 @@ public:
     QString name() const;
 //    uint32_t lastTimestamp();
     QUrl url() const;
+    void updateUrl(const QUrl& url);
+
     uint32_t updateInterval() const;
 
     uint32_t uptime() const;
@@ -66,10 +69,11 @@ public:
     uint32_t mcuTemp() const;
 
     bool isStale() const;
-    bool isLive() const;
+    bool isStopped() const;
+
+    void stop();
 
 
-    void unsubscribe();
     /*
      * Sends a request to the associated Zero
      * to toggle the switches
@@ -79,13 +83,7 @@ public:
 signals:
     void statusUpdated();
     void unsubscribed();
-
-    // emitted when the zero has been stale for too long
-    // the proxy should be deleted after this
-//    void dead();
-
-    // emitted when the zero has not send status data in a while
-    void stale();
+    void stopped();
 
     /*
      * Emitted when a switch toggle is requested
@@ -93,28 +91,47 @@ signals:
     void toggling();
     void toggleError();
 
+    /* for internal use
+     */
+
+    void receivedSmpInfo();
+    void live();
+    void newUrl();
+    void subscriptionRefused();
+    void shutdownRequested();
 
 private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
-    void onUnsubscribe(QCoapReply *reply);
 
     void onSwitchReplyFinished(QCoapReply *reply);
+    void processSmpReply(std::shared_ptr<smp::SmpReply> reply);
 
 private:
+    enum ConnectionState
+    {
+        Offline = 0,
+        Connected = 1,
+        Live = 2,
+        Stale = 3,
+        Stopped = 4
+    };
+
     void subscribe();
+    void unsubscribe();
     void initStaleDetection();
-    void getSmpDetails();
+    void requestSmpInfo();
     void loadImages();
 
     QCoapClient coapClient;
     QCoapReply* observerReply;
 
     QStateMachine proxyState;
+    QTimer connectTimer;
+    QTimer smpTimer;
+    QTimer subscribeTimer;
     QTimer liveTimer;
-    QTimer toggleTimer;
-    
-    bool stale_;
-    bool live_;
+
+    ConnectionState state_;
     
 
     QUrl url_;
@@ -139,7 +156,6 @@ private:
     OpenCloseTransition lastTransReason_;
 
     ::smp::SmpClient smpClient;
-    std::shared_ptr<smp::SmpReply> smpReply;
     std::vector<::smp::ImageSlot> fwSlots;
 };
 

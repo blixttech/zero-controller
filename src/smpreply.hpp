@@ -1,30 +1,34 @@
 #pragma once
-#include <QObject>
 #include <QByteArray>
 #include "smpheader.hpp"
 #include "smppayload.hpp"
 
 namespace smp {
 
-class SmpReply : public QObject
+class SmpReply 
 {
-    Q_OBJECT
 public:
-    SmpReply(SmpHeader reqHdr, QObject* parent = nullptr); 
+    enum Status 
+    {
+        Unknown = 0,
+        Ok = 1,
+        Invalid = 2,
+        Invalid_Header = 3,
+        Missing_Payload = 4
+    };
 
-    bool deserialize(QByteArray& data, bool checkHeader = true);
+    SmpReply(const QByteArray& data); 
 
-    void addData(const QByteArray& data);
+    bool getPayload(SmpPayload& payload) const;
 
-    bool getPayload(SmpPayload& payload);
-
-signals:
-    void finished();
+    SmpReply::Status status() const;
 
 private:
+    void deserialize(const QByteArray& data);
     SmpHeader header;
     QByteArray payload; 
     QByteArray encodedMsg;
+    Status status_;
 
     bool checkData();
     

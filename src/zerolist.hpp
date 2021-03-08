@@ -26,7 +26,7 @@ public:
 
     const ZeroVec& zeros() const;
 
-    void unsubscribe(); 
+    void clear(); 
 
 signals:
     void beforeAddingZero(int index);
@@ -37,7 +37,7 @@ signals:
     void beforeErasingZero(int index);
     void zeroErased(int index);
    
-    void allUnsubscribed();
+    void listClear();
 
 
 private:
@@ -45,10 +45,8 @@ private:
 
     ZeroMap zeros_; 
     ZeroVec zerosVec_;
-    uint unsubscribeCounter_;
 
     void notifyOfZeroUpdate(const QString& uuid);
-    void notifyOfZeroUnsubscribed();
 };
 
 } // end namespace

@@ -24,7 +24,7 @@ struct MgmtHeader {
 
 class SmpHeader
 {
-    public:
+public:
     SmpHeader();
     SmpHeader(uint8_t nh_op, uint8_t _res1, uint8_t nh_flags,
                 uint16_t nh_len, uint16_t nh_group, 

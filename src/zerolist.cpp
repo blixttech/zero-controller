@@ -4,7 +4,7 @@
 namespace zero {
 
 ZeroList::ZeroList(QObject *parent) : QObject(parent),
-    zeros_(), zerosVec_(), unsubscribeCounter_(0)
+    zeros_(), zerosVec_()
 {
 }
 
@@ -30,6 +30,9 @@ void ZeroList::erase(const QString& uuid)
     zerosVec_.erase(zerosVec_.begin() + idx);
     zeros_.erase(uuid);
     emit zeroErased(idx);
+
+    if (zerosVec_.size() == 0)
+        emit listClear();
 }
 
 void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
@@ -52,16 +55,14 @@ void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
                 notifyOfZeroUpdate(zero->uuid());
             }
     );
-    
-    connect(zero.get(), &ZeroProxy::stale,
+
+    connect(zero.get(), &ZeroProxy::stopped,
             [=]() 
             {
-                notifyOfZeroUpdate(zero->uuid());
+                qDebug() << "Erasing stopped " << zero->uuid();
+                erase(zero->uuid());
             }
     );
-
-    connect(zero.get(), &ZeroProxy::unsubscribed,
-            this, &ZeroList::notifyOfZeroUnsubscribed);
 }
 
 const ZeroVec& ZeroList::zeros() const
@@ -77,28 +78,14 @@ void ZeroList::notifyOfZeroUpdate(const QString& uuid)
     emit zeroUpdated(index);
 }
 
-void ZeroList::unsubscribe()
+void ZeroList::clear()
 {
-    unsubscribeCounter_ = zerosVec_.size();
-    if (0 == unsubscribeCounter_)
-        emit allUnsubscribed();
+    if (zerosVec_.size() == 0)
+        emit listClear();
 
     foreach (auto zero, zerosVec_) 
     {
-        zero->unsubscribe();
-    }
-}
-
-void ZeroList::notifyOfZeroUnsubscribed()
-{
-    if (unsubscribeCounter_ > 1)
-    {
-        unsubscribeCounter_--;
-    }
-    else
-    {
-        unsubscribeCounter_ = 0;
-        emit allUnsubscribed();
+        zero->stop();
     }
 }
 

@@ -6,7 +6,7 @@ namespace smp {
 class SmpPayload
 {
 public:
-    virtual bool deserialize(QByteArray& data) = 0;
+    virtual bool deserialize(const QByteArray& data) = 0;
 };
 
 } // end namespace

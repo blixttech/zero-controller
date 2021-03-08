@@ -45,29 +45,6 @@ bool SmpHeader::deserialize(QByteArray& reader)
     reader.remove(0, sizeof(MgmtHeader));
 
     return true;
-
-/*    qDebug() << "Reader.type: " << reader.type();
-    if (!reader.isByteArray()) 
-    {
-        qDebug() << "No byte array";
-        return false;
-    }
-
-    QByteArray result;
-    auto r = reader.readByteArray();
-    while (r.status == QCborStreamReader::Ok) {
-       result += r.data;
-       r = reader.readByteArray();
-    }
-
-    if (r.status == QCborStreamReader::Error) {
-       // handle error condition
-       result.clear();
-       qDebug() << "Parsing error";
-       return false;
-    }
-
-    if (result.length() != sizeof(MgmtHeader)) return false;*/
 }
 
 } // end of namespace

@@ -22,7 +22,7 @@ MainWindow::MainWindow(Config& config): QMainWindow(nullptr),
     ui->mgmtView->setModel(zeroManagementViewModel.get());
     connectSignals();
 
-    zeroCoapScanner->startScanning();
+    zeroCoapScanner->startScanning(10000);
 }
 
 void MainWindow::connectSignals()
@@ -40,16 +40,15 @@ void MainWindow::connectSignals()
             if (zeroList->contains(uuid))
             {
                 auto zpr = zeroList->get(uuid);
-                // if still active, nothing to do
-                if (!zpr->isStale()) return;
-               
-                // remove it, and replace it with a new version 
-                zeroList->erase(uuid);
-            }
 
-            // create a new proxy
-            auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress);
-            zeroList->insert(zProxy);
+                zpr->updateUrl(url);
+            }
+            else 
+            {
+                // create a new proxy
+                auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress);
+                zeroList->insert(zProxy);
+            }
         }
     );
 
@@ -66,15 +65,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
                                        QMessageBox::Yes | QMessageBox::No, 
                                        this);
 
-    QObject::connect(box->button(QMessageBox::Yes), &QAbstractButton::clicked, zeroList.get(), &ZeroList::unsubscribe);
+    QObject::connect(box->button(QMessageBox::Yes), &QAbstractButton::clicked, zeroList.get(), &ZeroList::clear);
     QObject::connect(box->button(QMessageBox::No), &QAbstractButton::clicked, box, &QObject::deleteLater);
 
-    QObject::connect(zeroList.get(), &ZeroList::allUnsubscribed, 
-            [=] ()
-            {
-                QTimer::singleShot(500, qApp, &QApplication::quit);
-            }
-    );
+    QObject::connect(zeroList.get(), &ZeroList::listClear, qApp, &QApplication::quit);
 
     box->show();
 }
