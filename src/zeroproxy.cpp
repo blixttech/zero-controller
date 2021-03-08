@@ -181,18 +181,34 @@ void ZeroProxy::initStaleDetection()
 
     // 6. Shutdown state
     QTimer* shutdownTimer = new QTimer(shutdown_state);
+    // as the QCoapReply gets disposed immediately , eventhough
+    // the subscription cancel message has not been sent
+    // It will be send once the next subscription update arrives -
+    // But only if the original CoapReply object has not been deleted
+    // (via deleteLater() ...)
+    // (Go figure...)
+    // Therefore, we need to stay in this state for a bit longer than the
+    // subscription interval to make sure the subscription gets cancelled
+    // And then also clean the observerReply in the exit event
+    //
     setupTimer(*shutdownTimer, 5 * updateInterval_, shutdown_state, stopped_state);
     connect(shutdown_state, &QState::entered, shutdownTimer, static_cast<void (QTimer::*)()>(&QTimer::start)); 
     connect(shutdown_state, &QState::exited, shutdownTimer, &QTimer::stop); 
     
     connect(shutdown_state, &QState::entered, 
-            [&, shutdown_state, stopped_state]()
+            [&]()
             {
                 qDebug() << "Entering shutdown";
-                if (nullptr == observerReply) return;
-                
-                shutdown_state->addTransition(observerReply, &QCoapReply::finished, stopped_state);
                 this->unsubscribe();
+            }
+    );
+    
+    connect(shutdown_state, &QState::exited, 
+            [&]()
+            {
+                qDebug() << "Entering shutdown";
+                this->observerReply->deleteLater();
+                this->observerReply = nullptr;
             }
     );
     proxyState.addState(shutdown_state);
@@ -216,6 +232,7 @@ void ZeroProxy::unsubscribe()
 {
     if (nullptr == observerReply) return;
 
+    qDebug() << "Cancel Observer";
     coapClient.cancelObserve(observerReply);
 }
 
