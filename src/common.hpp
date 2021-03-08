@@ -22,3 +22,9 @@ namespace zero {
 #define CONF_KEY_SAVE_FILE_DIR              "files/data_dir"
 #define CONF_DEF_SAVE_FILE_DIR              "data"
 
+#define CONF_KEY_SEARCH_INT                 "search/interval"
+#define CONF_DEF_SEARCH_INT                 1
+
+#define CONF_KEY_UPDATE_INT                 "update/interval"
+#define CONF_DEF_UPDATE_INT                 100
+

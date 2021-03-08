@@ -22,7 +22,10 @@ MainWindow::MainWindow(Config& config): QMainWindow(nullptr),
     ui->mgmtView->setModel(zeroManagementViewModel.get());
     connectSignals();
 
-    zeroCoapScanner->startScanning(10000);
+     
+    int search_int = GET_CONF(config, SEARCH_INT).toInt();
+    qInfo() << "Setting search interval to " << search_int << "sec";
+    zeroCoapScanner->startScanning(search_int * 1000);
 }
 
 void MainWindow::connectSignals()
@@ -32,6 +35,9 @@ void MainWindow::connectSignals()
     connect(interfaceList.get(), &NetworkInterfaceList::scan,
             zeroCoapScanner.get(), &ZeroCoapScanner::addScanTarget);
     
+    int update_int = GET_CONF(config, UPDATE_INT).toInt();
+    qInfo() << "Using update interval of " << update_int << "msec";
+
     connect(zeroCoapScanner.get(), &ZeroCoapScanner::newZeroDetected,    
         [=]( const QString& uuid, const QUrl& url, 
              const QString& hwversion, const QString& macaddress)
@@ -46,7 +52,7 @@ void MainWindow::connectSignals()
             else 
             {
                 // create a new proxy
-                auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress);
+                auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress, update_int);
                 zeroList->insert(zProxy);
             }
         }

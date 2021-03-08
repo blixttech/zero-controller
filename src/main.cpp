@@ -53,6 +53,14 @@ void processCmdArgs(zero::Config& config)
         "Log level \n 1:fatal, 2:critical, 3:warning, 4:info, 5:debug", "log-level");
     parser.addOption(logLevelOpt);
 
+    QCommandLineOption searchIntervalOpt(QStringList() << "s" << "search-interval", 
+        "Search interval for scanning the network for Zeros (in sec)", "search-interval","1" );
+    parser.addOption(searchIntervalOpt);
+
+    QCommandLineOption updateIntervalOpt(QStringList() << "u" << "update-interval", 
+        "Time period for updates coming from the Zeros (in msec)", "update-interval","100" );
+    parser.addOption(updateIntervalOpt);
+    
     parser.process(QCoreApplication::arguments());
 
     qDebug() << "Starting Application";
@@ -62,6 +70,14 @@ void processCmdArgs(zero::Config& config)
 
     if (parser.isSet(logLevelOpt)) {
         config.insert(CONF_KEY_LOG_LEVEL, parser.value(logLevelOpt).toInt());
+    }
+
+    if (parser.isSet(searchIntervalOpt)) {
+        config.insert(CONF_KEY_SEARCH_INT, parser.value(searchIntervalOpt).toInt());
+    }
+
+    if (parser.isSet(updateIntervalOpt)) {
+        config.insert(CONF_KEY_UPDATE_INT, parser.value(updateIntervalOpt).toInt());
     }
 }
 

@@ -32,6 +32,7 @@ public:
             const QString& uuid,
             const QString& hardwareVersion,
             const QString& macAddress,
+            uint32_t updateIntervalVal = 100,
             QObject *parent = nullptr);
 
     virtual ~ZeroProxy();
