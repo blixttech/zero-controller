@@ -134,6 +134,8 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
             else if (5 == col)
                 return Qt::Unchecked;*/
             break;
+        case Qt::UserRole:
+            return zList->zeros()[row]->isStale(); 
     }
     return QVariant();
 }

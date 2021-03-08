@@ -84,16 +84,31 @@ void OpenCloseButtonDelegate::setEditorData(QWidget *editor, const QModelIndex &
     auto openCloseButton = qobject_cast<QPushButton*>(editor);
     if (nullptr == openCloseButton) return;
 
+    // we use UserRole for stale indication
+    bool stale = (index.model()->data(index, Qt::UserRole).toBool());
+    
+    QString styleSheet;
     if (index.model()->data(index, Qt::DisplayRole).toBool())
     {
         openCloseButton->setText(tr("Closed"));
-        openCloseButton->setStyleSheet("QPushButton{ background-color: red }");
+        styleSheet = "QPushButton{ background-color: red }";
     }
     else
     {
         openCloseButton->setText(tr("Open"));
-        openCloseButton->setStyleSheet("QPushButton{ background-color: green }");
+        styleSheet = "QPushButton{ background-color: green }";
     }
+
+    if (stale) 
+    {
+        styleSheet = "QPushButton{ background-color: gray }";
+        openCloseButton->setEnabled(false);
+    }
+    else
+    {
+        openCloseButton->setEnabled(true);
+    }
+    openCloseButton->setStyleSheet(styleSheet);
 
     //QStyledItemDelegate::setEditorData(baseEditor,index);
 }
