@@ -26,7 +26,7 @@ void ZeroCoapScanner::stopScanning()
 
 void ZeroCoapScanner::addScanTarget(QHostAddress host, int port)
 {
-    resourceDiscovery_.addLocation(host, port);
+    resourceDiscovery_.addLocation(host, port, true);
 }
 
 void ZeroCoapScanner::onCoapDiscovered(const QVector<QCoapResource> &resources, 

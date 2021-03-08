@@ -17,8 +17,11 @@ public:
     bool start(uint32_t interval=1000);
     void stop();
     bool addLocation(const QString &host, int port=5683, 
+                    bool scan_now = false,
                     const QString &path=QLatin1String("/.well-known/core"));
+
     bool addLocation(const QHostAddress &host, int port=5683, 
+                    bool scan_now = false,
                     const QString &path=QLatin1String("/.well-known/core"));
 
 signals:

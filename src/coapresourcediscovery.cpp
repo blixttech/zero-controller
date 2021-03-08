@@ -112,7 +112,7 @@ void CoapResourceDiscovery::stop()
     }
 }
 
-bool CoapResourceDiscovery::addLocation(const QHostAddress &host, int port, const QString &path)
+bool CoapResourceDiscovery::addLocation(const QHostAddress &host, int port, bool scanNow, const QString &path)
 {
     QUrl url;
     url.setScheme("coap");
@@ -135,10 +135,12 @@ bool CoapResourceDiscovery::addLocation(const QHostAddress &host, int port, cons
 
     pData_->locations[url.toString()] = location;
 
+    if (scanNow)
+        onDiscoveryTimer();
     return true;
 }
 
-bool CoapResourceDiscovery::addLocation(const QString &host, int port, const QString &path)
+bool CoapResourceDiscovery::addLocation(const QString &host, int port, bool scanNow, const QString &path)
 {
     QHostAddress hostAddress;
     if (!hostAddress.setAddress(host)) {
@@ -146,7 +148,7 @@ bool CoapResourceDiscovery::addLocation(const QString &host, int port, const QSt
         return false;
     }
 
-    return addLocation(hostAddress, port, path);
+    return addLocation(hostAddress, port, scanNow, path);
 }
 
 void CoapResourceDiscovery::processDiscoveryResponse(const QHostAddress &sender, int port, const QByteArray &data)
