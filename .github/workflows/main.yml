@@ -10,7 +10,6 @@ jobs:
         DEBIAN_FRONTEND: "noninteractive"
         CONAN_USER_HOME: "${{ github.workspace }}/"
         CONAN_NON_INTERACTIVE: 1
-        blixt_conan_path: "$HOME/.local/bin"
 
     steps:
       - uses: actions/checkout@v2
@@ -18,6 +17,7 @@ jobs:
       - name: Update environment
         shell: bash
         run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
           # Update package lists
           sudo apt update -qq
           # Install build tools
@@ -55,8 +55,6 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          export PATH="${{ env.blixt_conan_path }}":$PATH
-
           # Setup conan
           # Note: libstdc++11 is needed to use new libc++ ABI
           conan profile new default --detect
@@ -64,5 +62,6 @@ jobs:
          
 
       - name: Build
+        shell: bash
         run: make debug
 
