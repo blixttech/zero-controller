@@ -7,8 +7,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     env:
-         CONAN_USER_HOME: "${{ github.workspace }}/"
-         CONAN_NON_INTERACTIVE: 1
+        DEBIAN_FRONTEND: "noninteractive"
+        CONAN_USER_HOME: "${{ github.workspace }}/"
+        CONAN_NON_INTERACTIVE: 1
+        blixt_conan_path: "$HOME/.local/bin"
 
     steps:
       - uses: actions/checkout@v2
@@ -50,6 +52,16 @@ jobs:
           pip3 install wheel setuptools
           pip3 install conan mako
 
+      - name: Configure CMake
+        shell: bash
+        run: |
+          export PATH="${{ env.blixt_conan_path }}":$PATH
+
+          # Setup conan
+          # Note: libstdc++11 is needed to use new libc++ ABI
+          conan profile new default --detect
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+         
 
       - name: Build
         run: make debug
