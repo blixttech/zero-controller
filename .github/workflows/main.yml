@@ -23,7 +23,7 @@ jobs:
           # Install build tools
           sudo apt install -y \
             make \
-            qmake \
+            qt5-qmake \
             cmake \
             wget \
             libgl1-mesa-dev \
