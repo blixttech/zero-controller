@@ -52,7 +52,7 @@ jobs:
           pip3 install wheel setuptools
           pip3 install conan mako
 
-      - name: Configure CMake
+      - name: Configure Conan
         shell: bash
         run: |
           # Setup conan
@@ -60,6 +60,9 @@ jobs:
           conan profile new default --detect
           conan profile update settings.compiler.libcxx=libstdc++11 default
          
+          conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          
 
       - name: Build
         shell: bash
