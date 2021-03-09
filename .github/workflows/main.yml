@@ -17,9 +17,9 @@ jobs:
         shell: bash
         run: |
           # Update package lists
-          apt update -qq
+          sudo apt update -qq
           # Install build tools
-          apt install -y \
+          sudo apt install -y \
             make \
             cmake \
             curl \
