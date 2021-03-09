@@ -1,4 +1,6 @@
 import os
+import os.path
+import stat
 import sys
 import shutil
 import pathlib
@@ -37,11 +39,12 @@ class BZControllerConan(ConanFile):
     _git_commit = "unknown"
     _cmake = None
 
+    linuxdeploy = "package/utils/linuxdeploy-x86_64.AppImage"
+
     def set_version(self):
         git = tools.Git(folder=self.recipe_folder)
         if not self.version:
-            output = git.run("describe --all").splitlines()[0].strip()
-            self.version = re.sub("^.*/v?|^v?", "", output)
+            self.version = git.get_tag()
         output = git.run("diff --stat").splitlines()
         self._git_is_dirty = True if output else False
         self._git_commit = git.run("rev-parse HEAD").splitlines()[0].strip()
@@ -53,6 +56,16 @@ class BZControllerConan(ConanFile):
         self.requires("qt/5.14.2@bincrafters/stable")
         self.requires("qtsvg/5.14.2@blixt/stable")
         self.requires("qtcoap/5.14.2@blixt/stable")
+        if not os.path.isfile(self.linuxdeploy):
+            tools.download("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage", self.linuxdeploy, overwrite=True)
+            st = os.stat(self.linuxdeploy)
+            os.chmod(self.linuxdeploy, st.st_mode | stat.S_IEXEC)
+
+        linuxdeploy_qt = "package/utils/linuxdeploy-plugin-qt-x86_64.AppImage"
+        if not os.path.isfile(linuxdeploy_qt):
+            tools.download("https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage", linuxdeploy_qt, overwrite=True)
+            st = os.stat(linuxdeploy_qt)
+            os.chmod(linuxdeploy_qt, st.st_mode | stat.S_IEXEC)
 
     def _configure_cmake(self):
         if not self._cmake:
@@ -78,15 +91,21 @@ class BZControllerConan(ConanFile):
         else:
             raise ConanException("Packaging is not supported for %s" % self.settings.os)
 
-    def deploy(self):
-        if self.settings.os == "Linux":
-            self._deploy_linux()
-        else:
-            raise ConanException("Deploying is not supported for %s" % self.settings.os)
-
     def _package_linux(self):
         self.copy("*", dst="app.dir", src="app.dir")
         self.copy("*", dst=os.path.join("app.dir", "usr", "bin"), src="bin")
 
-    def _deploy_linux(self):
-        self.copy("*", dst="app.dir", src="app.dir")
+        linuxdeploy_args = []
+        linuxdeploy_args.append("--appdir")
+        linuxdeploy_args.append(os.path.join(self.package_folder, "app.dir"))
+        linuxdeploy_args.append("--plugin")
+        linuxdeploy_args.append("qt")
+        linuxdeploy_args.append("--output")
+        linuxdeploy_args.append("appimage")
+        
+        deploy_env = {"NO_STRIP": "1", "VERSION" : self.version }
+        with tools.environment_append(deploy_env):
+            dplyExec = os.path.join(self.recipe_folder, self.linuxdeploy)
+            self.run(dplyExec + " %s" % " ".join(linuxdeploy_args), run_environment=True)
+
+        

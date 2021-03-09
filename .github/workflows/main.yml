@@ -1,0 +1,68 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-20.04
+
+    env:
+        DEBIAN_FRONTEND: "noninteractive"
+        CONAN_USER_HOME: "${{ github.workspace }}/"
+        CONAN_NON_INTERACTIVE: 1
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Note: we are using fetch-depth: 0 here to fetch the whole
+          # history and especially tags, since we use git describe
+          # afterwards to generate the installer filename.
+          fetch-depth: 0
+
+
+      - name: Update environment
+        shell: bash
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          # Update package lists
+          sudo apt update -qq
+          # Install build tools
+          sudo apt install -y \
+            make \
+            cmake \
+            wget \
+            lld \
+            ninja-build \
+            pkg-config \
+            python3 \
+            python3-pip 
+
+          pip3 install wheel setuptools
+          pip3 install conan mako
+
+      - name: Configure Conan
+        shell: bash
+        run: |
+          # Setup conan
+          # Note: libstdc++11 is needed to use new libc++ ABI
+          conan profile new default --detect
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+         
+          conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          
+      - name: Build
+        shell: bash
+        run: make release
+
+      - name: Build Appimage
+        shell: bash
+        run: make pack
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/local/bzcontroller-*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
