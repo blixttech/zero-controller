@@ -23,25 +23,24 @@ jobs:
           # Install build tools
           sudo apt install -y \
             make \
-            qt5-qmake \
             cmake \
             wget \
-            libgl1-mesa-dev \
-            libx11-dev \
-            libx11-xcb-dev \
-            libxcb-dri3-dev \
-            libxcb-icccm4-dev \
-            libxcb-image0-dev \
-            libxcb-keysyms1-dev \
-            libxcb-randr0-dev \
-            libxcb-render-util0-dev \
-            libxcb-render0-dev \
-            libxcb-shape0-dev \
-            libxcb-sync-dev \
-            libxcb-util-dev \
-            libxcb-xfixes0-dev \
-            libxcb-xinerama0-dev \
-            libxcb-xkb-dev \
+#            libgl1-mesa-dev \
+#            libx11-dev \
+#            libx11-xcb-dev \
+#            libxcb-dri3-dev \
+#            libxcb-icccm4-dev \
+#            libxcb-image0-dev \
+#            libxcb-keysyms1-dev \
+#            libxcb-randr0-dev \
+#            libxcb-render-util0-dev \
+#            libxcb-render0-dev \
+#            libxcb-shape0-dev \
+#            libxcb-sync-dev \
+#            libxcb-util-dev \
+#            libxcb-xfixes0-dev \
+#            libxcb-xinerama0-dev \
+#            libxcb-xkb-dev \
             lld \
             ninja-build \
             pkg-config \
@@ -66,7 +65,7 @@ jobs:
           
       - name: Build
         shell: bash
-        run: make debug
+        run: make release
 
       - name: Build appimage
         shell: bash

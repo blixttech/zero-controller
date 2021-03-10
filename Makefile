@@ -24,7 +24,7 @@ pack:
 	conan package $(PROJECT_DIR) --build-folder $(BUILD_DIR) --package-folder $(PACKAGE_DIR)
 
 release: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-release
-release: run_conan pack
+release: run_conan
 
 debug-light: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-debug-light
 debug-light: run_conan
