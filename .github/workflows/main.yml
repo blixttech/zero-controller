@@ -29,9 +29,7 @@ jobs:
             ninja-build \
             pkg-config \
             python3 \
-            python3-pip \
-            xkb-data \
-            xorg-dev
+            python3-pip 
 
           pip3 install wheel setuptools
           pip3 install conan mako
