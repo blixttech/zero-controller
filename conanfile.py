@@ -105,7 +105,6 @@ class BZControllerConan(ConanFile):
         linuxdeploy_args.append("appimage")
         
         deploy_env = {"NO_STRIP": "1"}
-        deploy_env["OUTPUT"] = "{0}-{1}.AppImage".format(self.name, self.settings.arch)
         with tools.environment_append(deploy_env):
             dplyExec = os.path.join(self.recipe_folder, self.linuxdeploy)
             self.run(dplyExec + " %s" % " ".join(linuxdeploy_args), run_environment=True)
