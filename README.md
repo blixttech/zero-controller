@@ -18,7 +18,7 @@ The development workflow of this project centers on [Conan](https://conan.io/) a
 - [Conan](https://conan.io/)
 - [CMake](https://cmake.org/)
 - C++ development tools
-    - g++-7 is recommended.
+    - minimum g++-7 
 
 ### Build environment setup
     
@@ -52,34 +52,38 @@ There are three build types for the Linux build:
 
   The final executable binary and the dependent libraries are built in **debug mode**.
 
-Instead of using [Conan](https://conan.io/) commands, the helper script [build-local-linux.sh](scripts/build-local-linux.sh) can be used to build as follows.
+The program is build using the provided Makefile as follows.
 
 
 - Release
 
     ```bash
     # (conan)$ We are in the "conan" conda environment
-    ./scripts/build-local-linux.sh -b
+    make release
     ```
 
 - Light debug
 
     ```bash
     # (conan)$ We are in the "conan" conda environment
-    ./scripts/build-local-linux.sh -b -d
+    make debug-light
     ```
 
 - Full debug
 
     ```bash
     # (conan)$ We are in the "conan" conda environment
-    ./scripts/build-local-linux.sh -b -D
+    make debug
+    ```
+
+The final executable is uploaded as AppImage. To perform the AppImage build, just run
+    ```bash
+    # (conan)$ We are in the "conan" conda environment
+    make pack
     ```
 
 ### Running
 
-The [build-local-linux.sh](scripts/build-local-linux.sh) script creates a directory named ``build`` in the root directory of the project for build artifacts.
-Before running the final binary, dependent library paths and other environment variables can be set via Conan's [Virtual Environments](https://docs.conan.io/en/latest/mastering/virtualenv.html) feature as follows.
 
 ```bash
 # (conan)$ We are in the "conan" conda environment
@@ -88,8 +92,7 @@ source build/local/activate_run.sh
 ./build/local/bin/bzcontroller
 ```
 
-As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the [build-local-linux.sh](scripts/build-local-linux.sh) script.
-Instead, ``make`` can be used as follows to rebuild if the dependencies, build steps and related environmental variables are not changed in the [conanfile.py](conanfile.py) file. 
+As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the Makefile again. Instead, ``make`` can be used as follows to rebuild if the dependencies, build steps and related environmental variables are not changed in the [conanfile.py](conanfile.py) file. 
 
 ```bash
 # (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
