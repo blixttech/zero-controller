@@ -23,11 +23,11 @@ class CustomRunEnvGenerator(generators.VirtualRunEnvGenerator):
             self.env['FONTCONFIG_PATH'] = "/etc/fonts"
 
 
-class BZControllerConan(ConanFile):
-    name = "bzcontroller"
+class ZeroControllerConan(ConanFile):
+    name = "zero-controller"
     description = "Desktop application for controlling Blixt Zero"
-    url = "https://github.com/blixttech/bzcontroller"
-    homepage = "https://github.com/blixttech/bzcontroller"
+    url = "https://github.com/blixttech/zero-controller"
+    homepage = "https://github.com/blixttech/zero-controller"
     license = "GPL-3.0-only"
 
     exports_sources = ["src/*", "app.dir/*", "resources/*", "CMakeLists.txt"]

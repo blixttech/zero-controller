@@ -29,7 +29,7 @@ else()
     add_executable(bzcontroller ${BZCONTROLLER_SOURCES})
 endif()
 
-set_property(TARGET bzcontroller PROPERTY OUTPUT_NAME "bzcontroller")
+set_property(TARGET bzcontroller PROPERTY OUTPUT_NAME "zero-controller")
 set_property(TARGET bzcontroller PROPERTY AUTOMOC ON)
 set_property(TARGET bzcontroller PROPERTY AUTOUIC ON)
 set_property(TARGET bzcontroller PROPERTY AUTORCC ON)

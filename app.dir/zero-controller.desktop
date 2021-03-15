@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=bzcontroller
+Name=ZeroController
 Type=Application
 Terminal=false
-Exec=bzcontroller
-Icon=bzcontroller
+Exec=zero-controller
+Icon=zero-controller
 Categories=Utility;
 Comment=A desktop application for controlling Blixt Zero

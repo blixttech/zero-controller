@@ -89,7 +89,7 @@ The final executable is uploaded as AppImage. To perform the AppImage build, jus
 # (conan)$ We are in the "conan" conda environment
 source build/local/activate_run.sh
 # (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
-./build/local/bin/bzcontroller
+./build/local/bin/zero-controller
 ```
 
 As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the Makefile again. Instead, ``make`` can be used as follows to rebuild if the dependencies, build steps and related environmental variables are not changed in the [conanfile.py](conanfile.py) file. 
