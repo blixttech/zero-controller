@@ -22,10 +22,11 @@ public:
     enum class OpenCloseTransition : uint8_t {
         NONE = 0, // only during initialisation
         EXT = 1, // external request, button or coap
-        OCP = 2, // over current protection
-        OTP = 3, // over temperature protection
+        OCP_HW = 2, // over current protection
+        OCP_SW = 3, // over current protection
         OCP_TEST = 4, // over current test
-        UVP = 5 // under voltage protection
+        OTP = 5, // over temperature protection
+        UVP = 6 // under voltage protection
     };
 
     ZeroProxy(const QUrl& url,

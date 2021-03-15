@@ -297,8 +297,10 @@ QString ZeroProxy::lastTransitionReasonStr() const
             return "Initialization";
         case OpenCloseTransition::EXT:
             return "User requested";
-        case OpenCloseTransition::OCP:
-            return "Overcurrent protection";
+        case OpenCloseTransition::OCP_HW:
+            return "Hardware overcurrent protection";
+        case OpenCloseTransition::OCP_SW:
+            return "Software overcurrent protection";
         case OpenCloseTransition::OTP:
             return "Overtemperature protection";
         case OpenCloseTransition::OCP_TEST:
