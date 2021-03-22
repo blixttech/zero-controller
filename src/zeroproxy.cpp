@@ -409,7 +409,13 @@ void ZeroProxy::toggle()
     QUrl url(url_);
     url.setPath("/switch");
     QUrlQuery params;
-    params.addQueryItem("a", "toggle");
+
+    if (closed()) {
+        params.addQueryItem("a", "open");
+    } else {
+        params.addQueryItem("a", "close");
+    }
+
     url.setQuery(params);
     
     auto reply = coapClient.post(url);
