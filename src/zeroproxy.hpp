@@ -34,6 +34,7 @@ public:
             const QString& hardwareVersion,
             const QString& macAddress,
             uint32_t updateIntervalVal = 100,
+            bool pullStatusUpdate = true,
             QObject *parent = nullptr);
 
     virtual ~ZeroProxy();
@@ -119,6 +120,7 @@ private:
     };
 
     void subscribe();
+    void pullStatusUpdate();
     void unsubscribe();
     void initStaleDetection();
     void requestSmpInfo();
@@ -132,6 +134,7 @@ private:
     QTimer smpTimer;
     QTimer subscribeTimer;
     QTimer liveTimer;
+    QTimer updateTimer;
 
     ConnectionState state_;
     
@@ -159,6 +162,7 @@ private:
 
     ::smp::SmpClient smpClient;
     std::vector<::smp::ImageSlot> fwSlots;
+    bool useGetForStatus;
 };
 
 } // end namespace

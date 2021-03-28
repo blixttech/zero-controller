@@ -13,6 +13,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
             const QString& hardwareVersion,
             const QString& macAddress,
             uint32_t updateIntervalVal,
+            bool pullStatusUpdate,
             QObject *parent) : QObject(parent),
     coapClient(QtCoap::SecurityMode::NoSecurity),
     observerReply(nullptr), proxyState(),
@@ -25,7 +26,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     powerInTemp_(0), powerOutTemp_(0), ambientTemp_(0), mcuTemp_(0),
     lastTransReason_(OpenCloseTransition::NONE),
     smpClient(url.host(),1337),
-    fwSlots()
+    fwSlots(), useGetForStatus(pullStatusUpdate)
 {
     connect(&smpClient, &smp::SmpClient::replyReceived, this, &ZeroProxy::processSmpReply);
     initStaleDetection();
@@ -38,6 +39,12 @@ ZeroProxy::~ZeroProxy()
 
 void ZeroProxy::subscribe()
 {
+    if (useGetForStatus)
+    {
+        pullStatusUpdate();
+        return;
+    }
+
     qDebug() << "Sending subscribe request";
     auto oUrl = url_;
     oUrl.setPath("/status");
@@ -46,10 +53,41 @@ void ZeroProxy::subscribe()
     oUrl.setQuery(params);
 
     if (nullptr != observerReply)
+    {
+        observerReply->disconnect();
         observerReply->deleteLater();
+    }
 
     observerReply = coapClient.observe(oUrl);
     connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
+}
+
+void ZeroProxy::pullStatusUpdate()
+{
+    qDebug() << "Using get for status update";
+    updateTimer.setInterval(updateInterval_);
+    connect(&updateTimer, &QTimer::timeout, 
+            [&]()
+            {
+                qDebug() << "executing pull update";
+                auto oUrl = url_;
+                oUrl.setPath("/status");
+                coapClient.get(oUrl);
+            }
+    );
+
+    connect(&coapClient, &QCoapClient::finished, 
+            [&](QCoapReply* reply)
+            {
+                if (QtCoap::ResponseCode::Content == reply->responseCode()) 
+                {
+                    qDebug() << "Going in here";
+                    this->onStatusUpdate(reply, reply->message());
+                }
+                reply->deleteLater();
+            ;}
+    );
+    updateTimer.start();
 }
 
 void setupTimer(QTimer& timer, uint32_t interval, QState* from, QAbstractState* to)
@@ -208,6 +246,7 @@ void ZeroProxy::initStaleDetection()
             [&]()
             {
                 qDebug() << "Entering shutdown";
+                if (useGetForStatus) return;
                 this->observerReply->deleteLater();
                 this->observerReply = nullptr;
             }
@@ -231,6 +270,12 @@ void ZeroProxy::initStaleDetection()
 
 void ZeroProxy::unsubscribe()
 {
+    if (useGetForStatus)
+    {
+        updateTimer.stop();
+        return;
+    }
+        
     if (nullptr == observerReply) return;
 
     qDebug() << "Cancel Observer";
@@ -339,6 +384,8 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     qDebug() << "Responsecode: " << reply->responseCode();
 
 
+    if (!message.hasOption(QCoapOption::OptionName::ContentFormat)) return;
+
     QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
     if(!format.isValid() || format.uintValue() != 0) {
         qDebug() << "Invalid content format";
@@ -390,12 +437,15 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
     mcuTemp_ = QString::fromUtf8(values[11]).toUInt();
 
     emit statusUpdated();
-    
-    QCoapOption observe = message.option(QCoapOption::OptionName::Observe);
-    if (!observe.isValid())
+   
+    if (!useGetForStatus)
     {
-        qDebug() << "Subscription refused";
-        emit subscriptionRefused();
+        QCoapOption observe = message.option(QCoapOption::OptionName::Observe);
+        if (!observe.isValid())
+        {
+            qDebug() << "Subscription refused";
+            emit subscriptionRefused();
+        }
     }
     else
     {
@@ -425,6 +475,7 @@ void ZeroProxy::toggle()
 
 void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
 {
+    reply->disconnect();
     reply->deleteLater();
     if (reply->errorReceived() == QtCoap::Error::Ok)
     {
