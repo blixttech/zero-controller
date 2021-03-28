@@ -172,7 +172,7 @@ void ZeroProxy::initStaleDetection()
   
     // 4. stale state
     QTimer *st = new QTimer(stale_state); 
-    setupTimer(*st, 60*1000, stale_state, stopped_state);
+    setupTimer(*st, 10*1000, stale_state, stopped_state);
     stale_state->addTransition(this, &ZeroProxy::live, live_state);
     // device might have rebooted
     stale_state->addTransition(this, &ZeroProxy::newUrl, stopped_state);
