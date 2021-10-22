@@ -10,6 +10,11 @@ jobs:
         DEBIAN_FRONTEND: "noninteractive"
         CONAN_USER_HOME: "${{ github.workspace }}/"
         CONAN_NON_INTERACTIVE: 1
+        CONAN_GIT_REF: "${{ github.ref }}"
+        CONAN_UPLOAD: "${{ secrets.CONAN_UPLOAD }}"
+        CONAN_LOGIN_USERNAME_UPLOAD: "${{ secrets.CONAN_LOGIN_USERNAME_UPLOAD }}"
+        CONAN_PASSWORD_UPLOAD: "${{ secrets.CONAN_PASSWORD_UPLOAD }}"
+        CONAN_SYSREQUIRES_MODE: "enabled"
 
     steps:
       - uses: actions/checkout@v2
@@ -48,8 +53,8 @@ jobs:
           conan profile new default --detect
           conan profile update settings.compiler.libcxx=libstdc++11 default
          
-          conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
-          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add upload "${CONAN_UPLOAD}"
+          conan user
           
       - name: Build
         shell: bash

@@ -23,15 +23,6 @@ if(NOT SET_UP_CONFIGURATIONS_DONE)
     endif()
 endif()
 
-option(USE_CONAN_BUILD_INFO "Whether or not to use conanbuildinfo.cmake file"  OFF)
-
-if (USE_CONAN_BUILD_INFO)
-    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup()
-endif()
-
-#list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
 find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Gui REQUIRED)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
