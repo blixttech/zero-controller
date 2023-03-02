@@ -4,6 +4,12 @@ BUILD_DIR := $(PROJECT_DIR)/build/local
 PACKAGE_BASE := $(PROJECT_DIR)/package
 PACKAGE_DIR := $(PACKAGE_BASE)/local
 PACKAGE_UTIL := $(PACKAGE_BASE)/util
+QT_VERSION := 6.4.2
+QT_BASE_DIR := $(PROJECT_DIR)/qt/
+QT_VERSION_BASE_DIR := $(PROJECT_DIR)/qt/$(QT_VERSION)/
+QT_SRC_DIR := $(QT_VERSION_BASE_DIR)/Src/
+QT_DIR := $(QT_VERSION_BASE_DIR)/gcc_64/
+QT_COAP:=$(QT_SRC_DIR)/qtcoap
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -14,11 +20,21 @@ $(PACKAGE_DIR):
 $(PACKAGE_UTIL):
 	mkdir -p $@
 
-setup: $(BUILD_DIR) $(PACKAGE_DIR)
+$(QT_VERSION_BASE_DIR):
+	mkdir -p $@
 
-run_conan: setup
-	conan install $(PROJECT_DIR) --install-folder $(BUILD_DIR) --profile $(CONAN_PROFILE)
-	conan build $(PROJECT_DIR) --build-folder $(BUILD_DIR)
+setup: $(BUILD_DIR) $(PACKAGE_DIR) $(QT_VERSION_BASE_DIR)
+	aqt install-qt -O $(QT_BASE_DIR) linux desktop $(QT_VERSION) -m qtscxml
+	aqt install-src -O $(QT_BASE_DIR) linux $(QT_VERSION) --archives qtcoap
+
+extlibs:
+	cd $(QT_COAP) && Qt6_DIR=$(QT_DIR) cmake .
+	cd $(QT_COAP) && make
+	cd $(QT_COAP) && cmake --install . --prefix $(QT_DIR)
+
+run_conan:
+	Qt6_DIR=$(QT_DIR) conan install $(PROJECT_DIR) --install-folder $(BUILD_DIR) --profile $(CONAN_PROFILE)
+	Qt6_DIR=$(QT_DIR) conan build $(PROJECT_DIR) --build-folder $(BUILD_DIR)
 
 pack:
 	conan package $(PROJECT_DIR) --build-folder $(BUILD_DIR) --package-folder $(PACKAGE_DIR)
@@ -35,5 +51,6 @@ debug: run_conan
 clean:
 	rm -rf build package
 
-	
+full_clean: clean
+	rm -rf $(QT_DIR)
 	

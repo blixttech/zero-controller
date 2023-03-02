@@ -3,7 +3,10 @@ build
 package
 .vscode
 .clangd
+qt
 
 # Files
 compile_commands.json
 *.swp
+*.log
+

@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.16)
 
 project (zero-controller CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CONAN_DISABLE_CHECK_COMPILER ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+list(APPEND CMAKE_PREFIX_PATH "qt/6.4.1/gcc_64")
 
 if(NOT SET_UP_CONFIGURATIONS_DONE)
     set(SET_UP_CONFIGURATIONS_DONE TRUE)
@@ -32,17 +36,23 @@ endif()
 
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt5 COMPONENTS Gui REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt5 COMPONENTS OpenGL REQUIRED)
-find_package(Qt5 COMPONENTS PrintSupport REQUIRED)
-find_package(Qt5 COMPONENTS Concurrent REQUIRED)
-find_package(Qt5 COMPONENTS Network REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5Coap REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS OpenGL)
+find_package(Qt6 REQUIRED COMPONENTS PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS StateMachine)
+find_package(Qt6 REQUIRED COMPONENTS Svg)
+find_package(Qt6 COMPONENTS Coap REQUIRED)
+#find_package(Qwt REQUIRED)
 find_package(Threads REQUIRED)
 
+qt_standard_project_setup()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
 
 add_subdirectory(src)

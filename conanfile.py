@@ -53,9 +53,6 @@ class ZeroControllerConan(ConanFile):
                          (self.version, self._git_commit, self._git_is_dirty))
 
     def requirements(self):
-        self.requires("qt/5.14.2@bincrafters/stable")
-        self.requires("qtsvg/5.14.2@blixt/stable")
-        self.requires("qtcoap/5.14.2@blixt/stable")
         if not os.path.isfile(self.linuxdeploy):
             tools.download("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage", self.linuxdeploy, overwrite=True)
             st = os.stat(self.linuxdeploy)

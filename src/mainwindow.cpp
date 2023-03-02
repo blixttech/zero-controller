@@ -65,18 +65,24 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     event->ignore();
 
-    QMessageBox* box = new QMessageBox(QMessageBox::Question, 
-                                       qApp->applicationName(), 
-                                       "Are you sure you want to quit?",
-                                       QMessageBox::Yes | QMessageBox::No, 
-                                       this);
+    QMessageBox box;
+    box.setText("Are you sure you want to quit?");
+    box.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+    box.setDefaultButton(QMessageBox::No);
+    int ret = box.exec();
 
-    QObject::connect(box->button(QMessageBox::Yes), &QAbstractButton::clicked, zeroList.get(), &ZeroList::clear);
-    QObject::connect(box->button(QMessageBox::No), &QAbstractButton::clicked, box, &QObject::deleteLater);
+    switch (ret) {
+      case QMessageBox::No:
+        return;
+        break;
+      case QMessageBox::Yes:
+      default:
+        zeroList->clear();
+        break;
+    }
+    qInfo() << "Shutting down";
 
-    QObject::connect(zeroList.get(), &ZeroList::listClear, qApp, &QApplication::quit);
-
-    box->show();
+    qApp->quit();
 }
 
 
