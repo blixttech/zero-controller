@@ -30,9 +30,6 @@ void ZeroList::erase(const QString& uuid)
     zerosVec_.erase(zerosVec_.begin() + idx);
     zeros_.erase(uuid);
     emit zeroErased(idx);
-
-    if (zerosVec_.size() == 0)
-        emit listClear();
 }
 
 void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
@@ -80,8 +77,7 @@ void ZeroList::notifyOfZeroUpdate(const QString& uuid)
 
 void ZeroList::clear()
 {
-    if (zerosVec_.size() == 0)
-        emit listClear();
+    qDebug() << "List size: " << zerosVec_.size();
 
     foreach (auto zero, zerosVec_) 
     {

@@ -1,9 +1,17 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_DIR := $(abspath $(dir $(MAKEFILE_PATH)))
-BUILD_DIR := $(PROJECT_DIR)/build/local
+BUILD_DIR := $(PROJECT_DIR)/build
 PACKAGE_BASE := $(PROJECT_DIR)/package
 PACKAGE_DIR := $(PACKAGE_BASE)/local
 PACKAGE_UTIL := $(PACKAGE_BASE)/util
+QT_VERSION := 6.4.2
+QT_BASE_DIR := $(PROJECT_DIR)/qt/
+QT_VERSION_BASE_DIR := $(PROJECT_DIR)/qt/$(QT_VERSION)/
+QT_SRC_DIR := $(QT_VERSION_BASE_DIR)/Src/
+QT_DIR := $(QT_VERSION_BASE_DIR)/gcc_64/
+QT_COAP:=$(QT_SRC_DIR)/qtcoap
+
+.PHONY: build
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -14,26 +22,24 @@ $(PACKAGE_DIR):
 $(PACKAGE_UTIL):
 	mkdir -p $@
 
-setup: $(BUILD_DIR) $(PACKAGE_DIR)
+$(QT_VERSION_BASE_DIR):
+	mkdir -p $@
 
-run_conan: setup
-	conan install $(PROJECT_DIR) --install-folder $(BUILD_DIR) --profile $(CONAN_PROFILE)
-	conan build $(PROJECT_DIR) --build-folder $(BUILD_DIR)
+setup: $(QT_VERSION_BASE_DIR)
+	aqt install-qt -O $(QT_BASE_DIR) linux desktop $(QT_VERSION) -m qtscxml
+	aqt install-src -O $(QT_BASE_DIR) linux $(QT_VERSION) --archives qtcoap
+	cd $(QT_COAP) && Qt6_DIR=$(QT_DIR) cmake .
+	cd $(QT_COAP) && make
+	cd $(QT_COAP) && cmake --install . --prefix $(QT_DIR)
 
-pack:
-	conan package $(PROJECT_DIR) --build-folder $(BUILD_DIR) --package-folder $(PACKAGE_DIR)
+build: $(BUILD_DIR)
+	cd $(BUILD_DIR) && Qt6_DIR=$(QT_DIR) cmake .. 
+	cd $(BUILD_DIR) && make
 
-release: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-release
-release: run_conan
-
-debug-light: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-debug-light
-debug-light: run_conan
-
-debug: CONAN_PROFILE = $(PROJECT_DIR)/conan/profile-linux-debug-full
-debug: run_conan
 
 clean:
 	rm -rf build package
 
-	
+full_clean: clean
+	rm -rf $(QT_BASE_DIR)
 	

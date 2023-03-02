@@ -37,8 +37,6 @@ signals:
     void beforeErasingZero(int index);
     void zeroErased(int index);
    
-    void listClear();
-
 
 private:
     Q_DISABLE_COPY(ZeroList);

@@ -38,18 +38,11 @@ jobs:
             python3-pip 
 
           pip3 install wheel setuptools
-          pip3 install conan mako
+          pip3 install mako aqtinstall
 
-      - name: Configure Conan
+      - name: Install Qt and QtCoap
         shell: bash
-        run: |
-          # Setup conan
-          # Note: libstdc++11 is needed to use new libc++ ABI
-          conan profile new default --detect
-          conan profile update settings.compiler.libcxx=libstdc++11 default
-         
-          conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
-          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+        run: make setup
           
       - name: Build
         shell: bash

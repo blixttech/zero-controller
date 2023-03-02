@@ -10,18 +10,17 @@ Blixt Zero uses the [Constrained Application Protocol](https://tools.ietf.org/ht
 
 The development workflow of this project centers on [Conan](https://conan.io/) and [CMake](https://cmake.org/) due to the convenience of managing dependencies.
 
-### Prerequisites
+### Build environment setup
+
+The software uses several tools to manage the build process
 
 - [Conda](https://docs.conda.io/) (optional, but recommended)
     - Used ONLY as a Python environment manager.
     - Pro tip: If you are setting up development environment for the first time, install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to save storage space and your time. 
-- [Conan](https://conan.io/)
 - [CMake](https://cmake.org/)
 - C++ development tools
-    - minimum g++-7 
+    - minimum g++-9
 
-### Build environment setup
-    
 Assuming, [Conda](https://docs.conda.io/) is already installed, 
 
 ```bash
@@ -31,9 +30,9 @@ source activate conan
 # (conan)$ Now, we are in the "conan" conda environment
 pip install pip --upgrade
 pip install conan
-# Adding required conan package repositories
-conan remote add blixttech-bintray https://api.bintray.com/conan/blixttech/conan-packages
-conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+
+# install aqtinstall to manage Qt installations
+pip install aqtinstall
 ```
 
 ### Building
