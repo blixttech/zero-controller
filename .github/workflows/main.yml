@@ -10,6 +10,11 @@ jobs:
         DEBIAN_FRONTEND: "noninteractive"
         CONAN_USER_HOME: "${{ github.workspace }}/"
         CONAN_NON_INTERACTIVE: 1
+        CONAN_GIT_REF: "${{ github.ref }}"
+        CONAN_UPLOAD: "${{ secrets.CONAN_UPLOAD }}"
+        CONAN_LOGIN_USERNAME_UPLOAD: "${{ secrets.CONAN_LOGIN_USERNAME_UPLOAD }}"
+        CONAN_PASSWORD_UPLOAD: "${{ secrets.CONAN_PASSWORD_UPLOAD }}"
+        CONAN_SYSREQUIRES_MODE: "enabled"
 
     steps:
       - uses: actions/checkout@v2
