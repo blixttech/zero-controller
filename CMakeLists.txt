@@ -7,8 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CONAN_DISABLE_CHECK_COMPILER ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-list(APPEND CMAKE_PREFIX_PATH "qt/6.4.1/gcc_64")
-
 if(NOT SET_UP_CONFIGURATIONS_DONE)
     set(SET_UP_CONFIGURATIONS_DONE TRUE)
     # No reason to set CMAKE_CONFIGURATION_TYPES if it's not a multiconfig generator
@@ -45,7 +43,7 @@ find_package(Qt6 REQUIRED COMPONENTS Concurrent)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS StateMachine)
 find_package(Qt6 REQUIRED COMPONENTS Svg)
-find_package(Qt6 COMPONENTS Coap REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Coap)
 #find_package(Qwt REQUIRED)
 find_package(Threads REQUIRED)
 

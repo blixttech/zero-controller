@@ -1,4 +1,4 @@
-set (BZCONTROLLER_SOURCES
+add_executable(zero-controller
     networkinterfacelist.cpp
     main.cpp
     mainwindow.cpp
@@ -22,48 +22,45 @@ set (BZCONTROLLER_SOURCES
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )
 
-if(MSVC)
-    # This is a GUI application without the console
-    add_executable(bzcontroller WIN32 ${BZCONTROLLER_SOURCES})
-else()
-    add_executable(bzcontroller ${BZCONTROLLER_SOURCES})
-endif()
+set_property(TARGET zero-controller PROPERTY OUTPUT_NAME "zero-controller")
+set_property(TARGET zero-controller PROPERTY AUTOMOC ON)
+set_property(TARGET zero-controller PROPERTY AUTOUIC ON)
+set_property(TARGET zero-controller PROPERTY AUTORCC ON)
+set_property(TARGET zero-controller PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
+set_property(TARGET zero-controller PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-set_property(TARGET bzcontroller PROPERTY OUTPUT_NAME "zero-controller")
-set_property(TARGET bzcontroller PROPERTY AUTOMOC ON)
-set_property(TARGET bzcontroller PROPERTY AUTOUIC ON)
-set_property(TARGET bzcontroller PROPERTY AUTORCC ON)
-set_property(TARGET bzcontroller PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
-set_property(TARGET bzcontroller PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(zero-controller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(zero-controller PRIVATE ${Qt6Core_INCLUDE_DIRS})
+target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
+target_include_directories(zero-controller PRIVATE ${Qt6Coap_INCLUDE_DIRS})
+target_include_directories(zero-controller PRIVATE ${Qt6Svg_INCLUDE_DIRS})
+target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
 
-target_include_directories(bzcontroller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(bzcontroller PRIVATE ${Qt6Core_INCLUDE_DIRS})
-target_include_directories(bzcontroller PRIVATE ${Qt6Network_INCLUDE_DIRS})
-target_include_directories(bzcontroller PRIVATE ${Qt6Coap_INCLUDE_DIRS})
-target_include_directories(bzcontroller PRIVATE ${Qt6Svg_INCLUDE_DIRS})
-target_include_directories(bzcontroller PRIVATE ${Qt6Network_INCLUDE_DIRS})
-
-target_compile_definitions(bzcontroller
+target_compile_definitions(zero-controller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT="${SOURCE_COMMIT}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY="${SOURCE_DIRTY}">
 )
 
-target_link_libraries(bzcontroller Qt6::Core)
-target_link_libraries(bzcontroller Qt6::Concurrent)
-target_link_libraries(bzcontroller Qt6::Gui)
-target_link_libraries(bzcontroller Qt6::Widgets)
-target_link_libraries(bzcontroller Qt6::OpenGL)
-target_link_libraries(bzcontroller Qt6::PrintSupport)
-target_link_libraries(bzcontroller Qt6::Network)
-target_link_libraries(bzcontroller Qt6::StateMachine)
-target_link_libraries(bzcontroller Qt6::Svg)
-target_link_libraries(bzcontroller Qt6::Coap)
-target_link_libraries(bzcontroller ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(zero-controller Qt6::Core)
+target_link_libraries(zero-controller Qt6::Concurrent)
+target_link_libraries(zero-controller Qt6::Gui)
+target_link_libraries(zero-controller Qt6::Widgets)
+target_link_libraries(zero-controller Qt6::OpenGL)
+target_link_libraries(zero-controller Qt6::PrintSupport)
+target_link_libraries(zero-controller Qt6::Network)
+target_link_libraries(zero-controller Qt6::StateMachine)
+target_link_libraries(zero-controller Qt6::Svg)
+target_link_libraries(zero-controller Qt6::Coap)
+target_link_libraries(zero-controller ${CMAKE_THREAD_LIBS_INIT})
 
 include(GNUInstallDirs)
 
-install(TARGETS bzcontroller 
+set_target_properties(zero-controller PROPERTIES
+    WIN32_EXECUTABLE ON
+)
+
+install(TARGETS zero-controller 
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
