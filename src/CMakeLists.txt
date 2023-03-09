@@ -40,6 +40,7 @@ target_compile_definitions(zero-controller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT="${SOURCE_COMMIT}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY="${SOURCE_DIRTY}">
+    PRIVATE USE_${CMAKE_CXX_BYTE_ORDER}
 )
 
 target_link_libraries(zero-controller Qt6::Core)
