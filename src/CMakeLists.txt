@@ -1,3 +1,5 @@
+INCLUDE (CheckIncludeFiles)
+
 add_executable(zero-controller
     networkinterfacelist.cpp
     main.cpp
@@ -36,12 +38,21 @@ target_include_directories(zero-controller PRIVATE ${Qt6Coap_INCLUDE_DIRS})
 target_include_directories(zero-controller PRIVATE ${Qt6Svg_INCLUDE_DIRS})
 target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
 
+
+CHECK_INCLUDE_FILES(winsock2.h USE_WINSOCK2_H)
+
 target_compile_definitions(zero-controller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_COMMIT="${SOURCE_COMMIT}">
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_DIRTY="${SOURCE_DIRTY}">
     PRIVATE USE_${CMAKE_CXX_BYTE_ORDER}
 )
+
+if(USE_WINSOCK2_H)
+    target_compile_definitions(zero-controller
+        PRIVATE USE_WINSOCK2
+    )
+endif()
 
 target_link_libraries(zero-controller Qt6::Core)
 target_link_libraries(zero-controller Qt6::Concurrent)

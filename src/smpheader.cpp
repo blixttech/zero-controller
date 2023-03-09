@@ -2,7 +2,11 @@
 
 #include <QByteArray>
 
+#ifdef USE_WINSOCK2
+#include <winsock2.h>
+#else
 #include <arpa/inet.h>
+#endif
 
 
 namespace smp {
