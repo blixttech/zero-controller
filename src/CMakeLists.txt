@@ -39,7 +39,6 @@ target_include_directories(zero-controller PRIVATE ${Qt6Svg_INCLUDE_DIRS})
 target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
 
 
-CHECK_INCLUDE_FILES(winsock2.h USE_WINSOCK2_H)
 
 target_compile_definitions(zero-controller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
@@ -48,6 +47,7 @@ target_compile_definitions(zero-controller
     PRIVATE USE_${CMAKE_CXX_BYTE_ORDER}
 )
 
+CHECK_INCLUDE_FILES(winsock2.h USE_WINSOCK2_H)
 if(USE_WINSOCK2_H)
     target_compile_definitions(zero-controller
         PRIVATE USE_WINSOCK2
@@ -66,7 +66,9 @@ target_link_libraries(zero-controller Qt6::Svg)
 target_link_libraries(zero-controller Qt6::Coap)
 target_link_libraries(zero-controller ${CMAKE_THREAD_LIBS_INIT})
 
+if(UNIX)
 include(GNUInstallDirs)
+endif()
 
 set_target_properties(zero-controller PROPERTIES
     WIN32_EXECUTABLE ON
