@@ -37,7 +37,8 @@ jobs:
             libglew-dev \
             libxkbcommon-x11-0 \
             libxcb-icccm4 \
-            libxcb-image0
+            libxcb-image0 \
+            libxcb-keysyms1
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
