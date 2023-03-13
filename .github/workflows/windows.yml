@@ -21,6 +21,7 @@ jobs:
             set GITHUB_ENV=%GITHUB_ENV%;Qt6_DIR=%Qt6_DIR%
             echo %GITHUB_ENV%
             echo %Qt6_DIR%
+            echo DONE
       
         - name: Build
           shell: cmd
