@@ -39,7 +39,8 @@ jobs:
             libxcb-icccm4 \
             libxcb-image0 \
             libxcb-keysyms1 \
-            libxcb-randr0
+            libxcb-randr0 \
+            libxcb-render-util0
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
