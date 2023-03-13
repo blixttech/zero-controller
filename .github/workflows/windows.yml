@@ -18,9 +18,10 @@ jobs:
           run: |
             pip install aqtinstall
             setup.bat
-            echo "${{ github.workspace }}/Qt/%QTVERSION%/msvc2019_64/bin/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
             set GITHUB_ENV=%GITHUB_ENV%;Qt6_DIR=%Qt6_DIR%
-
+            echo %GITHUB_ENV%
+            echo %Qt6_DIR%
+      
         - name: Build
           shell: cmd
           run: |
