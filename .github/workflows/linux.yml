@@ -35,7 +35,7 @@ jobs:
             python3 \
             python3-pip \
             libglew-dev \
-            libxkbcommon-x11
+            libxkbcommon-x11-0
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
