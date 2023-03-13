@@ -40,7 +40,8 @@ jobs:
             libxcb-image0 \
             libxcb-keysyms1 \
             libxcb-randr0 \
-            libxcb-render-util0
+            libxcb-render-util0 \
+            libxcb-shape0
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
