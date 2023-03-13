@@ -45,7 +45,7 @@ jobs:
           
       - name: Build
         shell: bash
-        run: make build
+        run: make release
 
       - name: Build Appimage
         shell: bash

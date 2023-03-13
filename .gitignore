@@ -5,6 +5,8 @@ package
 .clangd
 qt
 .qt
+tools
+artifacts
 
 # Files
 compile_commands.json
