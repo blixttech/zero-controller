@@ -33,8 +33,8 @@ setup-qt: $(QT_VERSION_BASE_DIR)
 setup-tools: $(TOOLS_DIR)
 	wget -O $(TOOLS_DIR)/linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 	wget -O $(TOOLS_DIR)/linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
-	chmod ax+ $(TOOLS_DIR)/linuxdeploy
-	chmod ax+ $(TOOLS_DIR)/linuxdeploy-plugin-qt
+	chmod a+x $(TOOLS_DIR)/linuxdeploy
+	chmod a+x $(TOOLS_DIR)/linuxdeploy-plugin-qt
 
 setup: setup-qt setup-tools
 
