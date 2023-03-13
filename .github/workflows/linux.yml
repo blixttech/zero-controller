@@ -38,7 +38,8 @@ jobs:
             libxkbcommon-x11-0 \
             libxcb-icccm4 \
             libxcb-image0 \
-            libxcb-keysyms1
+            libxcb-keysyms1 \
+            libxcb-randr0
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
