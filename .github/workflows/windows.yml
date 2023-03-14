@@ -14,21 +14,20 @@ jobs:
               python-version: '3.8'
 
         - name: Install Qt6
-          shell: cmd
+          shell: pwsh
           run: |
-            @chcp 65001>nul
             pip install aqtinstall
             setup.bat
-            echo Qt6_DIR=%Qt6_DIR% >> %GITHUB_ENV% 
+            echo "Qt6_DIR=%Qt6_DIR%"" >> %GITHUB_ENV% 
             echo DONE
       
         - name: Build
-          shell: cmd
+          shell: pwsh
           run: |
             build_release.bat
 
         - name: Create Zip Archive
-          shell: cmd
+          shell: pwsh
           run: |
             pack.bat
 
