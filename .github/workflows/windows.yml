@@ -14,22 +14,22 @@ jobs:
               python-version: '3.8'
 
         - name: Install Qt6
-          shell: pwsh
+          shell: cmd
           run: |
             pip install aqtinstall
-            .\setup.ps1
-            echo 'Qt6_DIR=$Qt6_DIR' >> $env:GITHUB_ENV 
+            setup.bat
+            echo "Qt6_DIR=%Qt6_DIR%" >> $env:GITHUB_ENV 
             echo DONE
       
         - name: Build
-          shell: pwsh
+          shell: cmd
           run: |
-            .\build.bat Release
+            build.bat Release
 
         - name: Create Zip Archive
-          shell: pwsh
+          shell: cmd
           run: |
-            .\pack.bat
+            pack.bat
 
         - name: Windows Release
           uses: actions/upload-artifact@v1
