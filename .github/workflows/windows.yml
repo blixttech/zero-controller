@@ -16,11 +16,11 @@ jobs:
         - name: Install Qt6
           shell: cmd
           run: |
+            @chcp 65001>nul
+            echo Val2=Moe >> %GITHUB_OUTPUT%
             pip install aqtinstall
             setup.bat
-            set GITHUB_ENV=%GITHUB_ENV%;Qt6_DIR=%Qt6_DIR%
-            echo %GITHUB_ENV%
-            echo %Qt6_DIR%
+            echo Qt6_DIR=%Qt6_DIR% >> %GITHUB_OUTPUT%            
             echo DONE
       
         - name: Build
