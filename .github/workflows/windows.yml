@@ -24,12 +24,12 @@ jobs:
         - name: Build
           shell: pwsh
           run: |
-            build_release.bat
+            .\build.bat Release
 
         - name: Create Zip Archive
           shell: pwsh
           run: |
-            pack.bat
+            .\pack.bat
 
         - name: Windows Release
           uses: actions/upload-artifact@v1
