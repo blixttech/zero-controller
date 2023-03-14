@@ -17,8 +17,8 @@ jobs:
           shell: pwsh
           run: |
             pip install aqtinstall
-            .\setup.bat
-            echo "Qt6_DIR=%Qt6_DIR%" >> %GITHUB_ENV% 
+            .\setup.ps1
+            echo 'Qt6_DIR=$Qt6_DIR' >> $GITHUB_ENV 
             echo DONE
       
         - name: Build
