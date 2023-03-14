@@ -14,11 +14,11 @@ jobs:
               python-version: '3.8'
 
         - name: Install Qt6
-          shell: cmd
+          shell: pwsh
           run: |
             pip install aqtinstall
             setup.bat
-            echo "Qt6_DIR=%Qt6_DIR%" >> $env:GITHUB_ENV 
+            echo "Qt6_DIR=$Qt6_DIR" >> $env:GITHUB_ENV 
             echo DONE
       
         - name: Build
