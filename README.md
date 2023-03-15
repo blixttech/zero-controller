@@ -6,11 +6,10 @@ Blixt Zero uses the [Constrained Application Protocol](https://tools.ietf.org/ht
 
 **NOTE: This application is a work in progress. Therefore, features/functionalities are subjected for changes without prior notice.**
 
-## Development workflow (Linux)
+## Development workflow
 
-The development workflow of this project centers on [Conan](https://conan.io/) and [CMake](https://cmake.org/) due to the convenience of managing dependencies.
-
-### Build environment setup
+### Linux
+#### Build-environment setup
 
 The software uses several tools to manage the build process
 
@@ -18,83 +17,95 @@ The software uses several tools to manage the build process
     - Used ONLY as a Python environment manager.
     - Pro tip: If you are setting up development environment for the first time, install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to save storage space and your time. 
 - [CMake](https://cmake.org/)
+- aqt for installing Qt
 - C++ development tools
     - minimum g++-9
 
-Assuming, [Conda](https://docs.conda.io/) is already installed, 
+Assuming, Conda and CMake are already installed, the following will setup the build environment.
+This step will only have to be executed once.
 
 ```bash
 # Create a Python environment for Conan 
-conda create --name conan python=3 
-source activate conan
-# (conan)$ Now, we are in the "conan" conda environment
+conda create --name zero python=3 
+conda activate zero
+# (zero)$ Now, we are in the "zero" conda environment
 pip install pip --upgrade
-pip install conan
 
 # install aqtinstall to manage Qt installations
 pip install aqtinstall
+
+# install all Qt and additional libraries
+make setup
 ```
 
-### Building
-
-There are three build types for the Linux build:
-- Release
-
-  The final executable binary and the dependent libraries are built in **release mode**.  
-
-- Light debug
-
-  Only the final executable binary is built in **debug mode** and the dependent libraries are built in **release mode**.
-  Though mixing debug and release binaries/libraries sometimes considered as a bad practice (impossible to do with Microsoft Visual C++), it offers great advantages in terms of storage and performance.  
-
-- Full debug
-
-  The final executable binary and the dependent libraries are built in **debug mode**.
-
-The program is build using the provided Makefile as follows.
-
+#### Building & Packing
 
 - Release
 
     ```bash
-    # (conan)$ We are in the "conan" conda environment
+    # (zero)$ We are in the "zero" conda environment
     make release
     ```
 
-- Light debug
+- Debug
 
     ```bash
-    # (conan)$ We are in the "conan" conda environment
-    make debug-light
-    ```
-
-- Full debug
-
-    ```bash
-    # (conan)$ We are in the "conan" conda environment
+    # (zero)$ We are in the "zero" conda environment
     make debug
     ```
 
-The final executable is uploaded as AppImage. To perform the AppImage build, just run
+The final executable is uploaded as AppImage. 
+! This is only needed if you want to test the final AppImage and should usually be done on a Release build
+To perform the AppImage build, just run
     ```bash
-    # (conan)$ We are in the "conan" conda environment
+    # (zero)$ We are in the "zero" conda environment
     make pack
     ```
 
-### Running
+#### Running
 
-
+To run the debug build:
 ```bash
-# (conan)$ We are in the "conan" conda environment
-source build/local/activate_run.sh
-# (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
-./build/local/bin/zero-controller
+# (qt)$ We are in the "qt" conda environment
+./build/Debug/bin/zero-controller
 ```
 
-As this project uses [CMake](https://cmake.org/), successive rebuilds do not require invoking the Makefile again. Instead, ``make`` can be used as follows to rebuild if the dependencies, build steps and related environmental variables are not changed in the [conanfile.py](conanfile.py) file. 
+### Windows
 
-```bash
-# (conanrunenv) (conan)$ We are in the "conan" conda & conan's virtual run environment
-cd build/local
-make
+#### Build Environment Setup
+- Install the [Visual Studio build tools] (https://visualstudio.microsoft.com/downloads/?q=build+tools)
+- [Conda](https://docs.conda.io/) (optional, but recommended)
+    - Used ONLY as a Python environment manager.
+    - Pro tip: If you are setting up development environment for the first time, install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to save storage space and your time. 
+
+Open a developer tools command prompt:
+```cmd
+# Create a Python environment for Conan 
+conda create --name zero python=3 
+conda activate zero
+# (zero)$ Now, we are in the "zero" conda environment
+pip install pip --upgrade
+
+# install aqtinstall to manage Qt installations
+pip install aqtinstall
+
+# install all Qt and additional libraries
+setup.bat
+```
+
+#### Building
+
+Debug:
+```cmd
+build_debug.bat
+```
+
+Release:
+```cmd
+build_release.bat
+```
+
+Pack:
+```cmd
+pack.bat
 ```
