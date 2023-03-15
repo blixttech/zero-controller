@@ -1,5 +1,5 @@
 @echo off
-cd %~dp0\artifact\Release
+cd %~dp0\artifact\Release\bin
 
 windeployqt zero-controller.exe --release --compiler-runtime
 copy C:\Windows\System32\concrt140.dll . 
