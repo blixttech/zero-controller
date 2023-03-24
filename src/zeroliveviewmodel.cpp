@@ -47,7 +47,7 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
     // generate a log message when this method gets called
-/*    qDebug() << QString("row %1, col%2, role %3")
+    /*qDebug() << QString("row %1, col%2, role %3")
             .arg(row).arg(col).arg(role);*/
 
     switch (role) 
@@ -150,7 +150,8 @@ bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value,
     if (1 != col) return false;
 
     zList->zeros()[row]->toggle();
-
+    emit dataChanged(index, index, {role}); 
+        
     return true;
 }
 
@@ -181,8 +182,8 @@ void ZeroLiveViewModel::zeroAdded(int newRow)
 
 void ZeroLiveViewModel::zeroUpdated(int updatedRow)
 {
-    auto topLeft = createIndex(updatedRow,0);
-    auto bottomRight = createIndex(updatedRow,columnCount());
+    auto topLeft = createIndex(updatedRow, 0);
+    auto bottomRight = createIndex(updatedRow, columnCount()-1);
 
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }
