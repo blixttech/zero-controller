@@ -8,8 +8,18 @@ aqt install-src -O %QTBASEDIR% windows %QTVERSION% --archives qtcoap
 
 set Qt6_DIR=%QTVERDIR%\msvc2019_64\
 set QTCOAPSRC=%QTVERDIR%\Src\qtcoap
-echo "Configuring QtCOAP"
-cmake -G Ninja -B build\qtcoap %QTCOAPSRC%
+echo "Configuring QtCOAP Debug"
+cmake -G Ninja -B build\qtcoap -S %QTCOAPSRC% -D CMAKE_BUILD_TYPE=Debug
+echo "Building QtCOAP"
+cmake --build build\qtcoap
+echo "Installating QtCOAP"
+cmake --install build\qtcoap
+
+echo "Removing build artifacts"
+rmdir /s /q build\qtcoap
+
+echo "Configuring QtCOAP Release"
+cmake -G Ninja -B build\qtcoap -S %QTCOAPSRC% -D CMAKE_BUILD_TYPE=Release
 echo "Building QtCOAP"
 cmake --build build\qtcoap
 echo "Installating QtCOAP"
