@@ -8,8 +8,8 @@ aqt install-src -O $QTBASEDIR windows $QTVERSION --archives qtcoap
 $Global:Qt6_DIR=$QTVERDIR + "\msvc2019_64\"
 
 $QTCOAPSRC=$QTVERDIR + "\Src\qtcoap"
-echo "Configuring QtCOAP"
-cmake -G Ninja -B build\qtcoap $QTCOAPSRC -D CMAKE_PREFIX_PATH=$Qt6_DIR
+echo "Configuring QtCOAP Release"
+cmake -G Ninja -B build\qtcoap -S $QTCOAPSRC -D CMAKE_PREFIX_PATH=$Qt6_DIR -D CMAKE_BUILD_TYPE=Release
 echo "Building QtCOAP"
 cmake --build build\qtcoap
 echo "Installating QtCOAP"
