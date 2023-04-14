@@ -13,7 +13,7 @@ TOOLS_DIR:=$(PROJECT_DIR)/tools
 PACKAGE_BASE_DIR := $(PROJECT_DIR)/artifacts
 APP_DIR:=$(PACKAGE_BASE_DIR)/Release
 
-VERSION=$(shell git describe --always --match v[0-9]* HEAD | cut -c2-)
+VERSION=$(shell git describe --tags --always --match v[0-9]* HEAD | cut -c2-)
 
 .PHONY: build
 
