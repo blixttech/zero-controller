@@ -85,7 +85,7 @@ void ZeroProxy::pullStatusUpdate()
                     this->onStatusUpdate(reply, reply->message());
                 }
                 reply->deleteLater();
-            ;}
+            }
     );
     updateTimer.start();
 }
