@@ -17,7 +17,17 @@ namespace zero {
             QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
  //           Qt::ItemFlags flags(const QModelIndex &index) const override;
-//            bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+            bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
+            enum ManagementColumns
+            {
+                Z_UUID = 0,
+                Z_IP = 1,
+                FW_SLOT1 = 2,
+                FW_SLOT2 = 3,
+                UPDATE_STATUS = 4,
+                INIT_UPDATE = 5
+            };
        
         private slots:
             void beforeAddingZero(int newRow); 

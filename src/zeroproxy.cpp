@@ -81,7 +81,6 @@ void ZeroProxy::pullStatusUpdate()
             {
                 if (QtCoap::ResponseCode::Content == reply->responseCode()) 
                 {
-                    qDebug() << "Going in here";
                     this->onStatusUpdate(reply, reply->message());
                 }
                 reply->deleteLater();

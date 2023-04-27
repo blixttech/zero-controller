@@ -12,6 +12,7 @@ add_executable(zero-controller
     zerocoapscanner.cpp
     zeroliveviewmodel.cpp
     zeroliveviewtab.cpp
+    firmwareupdatefilter.cpp
     openclosebuttondelegate.cpp
     zeromanagementviewmodel.cpp
     zeromanagementviewtab.cpp
