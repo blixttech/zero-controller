@@ -1,7 +1,8 @@
 #include "osmgmt.hpp"
+#include "msgutil.hpp"
 #include <QCborStreamReader>
 #include <QCborStreamWriter>
-#include "msgutil.hpp"
+#include <stdexcept>
 
 namespace smp {
     
