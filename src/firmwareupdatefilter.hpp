@@ -23,6 +23,7 @@ namespace zero {
         private:
             std::set<int> selectedZeros;
             std::set<int> updatingZeros;
+            bool firmwareUpdateInProgress;
 
     };
 

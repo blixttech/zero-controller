@@ -23,7 +23,7 @@ ZeroManagementViewTab::ZeroManagementViewTab(QWidget* parent) : QWidget(parent),
     fwVersionStr(new QLabel("N/A", fwInfo)),
     sizeLabel(new QLabel("Size:", fwInfo)),
     fwSizeStr(new QLabel("N/A", fwInfo)),
-    selectButton(new QPushButton("Select", fwInfo)),
+    selectButton(new QPushButton("Select File", fwInfo)),
     updateButton(new QPushButton("Update", fwInfo)),
     updateStatus(new QTableView(fwUpdateTab)),
     fwFilter(new FirmwareUpdateFilter(updateStatus)),
@@ -94,8 +94,8 @@ void ZeroManagementViewTab::setupFwUploadTab()
     fwBox->addWidget(fwVersionStr,1,1);
     fwBox->addWidget(sizeLabel,2,0);
     fwBox->addWidget(fwSizeStr,2,1);
-    fwBox->addWidget(updateButton,3,0);
     fwBox->addWidget(selectButton,3,1);
+    fwBox->addWidget(updateButton,3,0);
     fwInfo->setLayout(fwBox);
 
     
@@ -113,7 +113,8 @@ void ZeroManagementViewTab::setupFwUploadTab()
     connect(updateButton, &QPushButton::clicked,
             [&](bool checked)
             {
-                fwFilter->initiateFwUpdate(firmwareFile);    
+                fwFilter->initiateFwUpdate(firmwareFile);
+                zeroTable->selectionModel()->clearSelection();
             }
     );
 }
@@ -168,6 +169,10 @@ bool ZeroManagementViewTab::isFileValidFw(const QByteArray &fileContent) const
 void ZeroManagementViewTab::setModel(ZeroManagementViewModel* model)
 {
     zeroTable->setModel(model);
+    // hiding the Update status and initate update column
+    zeroTable->setColumnHidden(ZeroManagementViewModel::ManagementColumns::UPDATE_STATUS, true);
+    zeroTable->setColumnHidden(ZeroManagementViewModel::ManagementColumns::INIT_UPDATE, true);
+        
     fwFilter->setSourceModel(model);
     fwFilter->setSelectionModel(zeroTable->selectionModel());
     updateStatus->setModel(fwFilter);

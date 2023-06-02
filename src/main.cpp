@@ -14,31 +14,6 @@
 
 namespace zero {
 
-void customMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
-    QByteArray localMsg = msg.toLocal8Bit();
-    const char* file = context.file ? context.file : "";
-    const char* function = context.function ? context.function : "";
-    QString dateTimeStr = QDateTime::currentDateTime().toString("yyyyMMdd-hh:mm:ss.zzz");
-    switch (type) {
-        case QtDebugMsg:
-            fprintf(stdout, "%s|DEBUG| %s\n", dateTimeStr.toStdString().c_str(), msg.toStdString().c_str());
-            break;
-        case QtInfoMsg:
-            fprintf(stdout, "%s|INFO | %s\n", dateTimeStr.toStdString().c_str(), msg.toStdString().c_str());
-            break;
-        case QtWarningMsg:
-            fprintf(stderr, "%s|WARN | %s\n", dateTimeStr.toStdString().c_str(), msg.toStdString().c_str());
-            break;
-        case QtCriticalMsg:
-            fprintf(stderr, "%s|CRTCL| %s\n", dateTimeStr.toStdString().c_str(), msg.toStdString().c_str());
-            break;
-        case QtFatalMsg:
-            fprintf(stderr, "%s|FATAL| %s\n", dateTimeStr.toStdString().c_str(), msg.toStdString().c_str());
-            break;
-    }
-}
-
 void processCmdArgs(zero::Config& config)
 {
     QCommandLineParser parser;
@@ -63,7 +38,7 @@ void processCmdArgs(zero::Config& config)
     
     parser.process(QCoreApplication::arguments());
 
-    qDebug() << "Starting Application";
+    qInfo() << "Starting Application";
     if (parser.isSet(cfgFileOpt)) {
         config.insert(CONF_KEY_CFG_FILE, parser.value(cfgFileOpt));
     }
@@ -128,7 +103,8 @@ void applyStyles(QApplication& app)
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    qInstallMessageHandler(zero::customMessageOutput);
+
+    qSetMessagePattern("%{time dd.MM.yy hh:mm:ss.zzz} %{type} %{file}:%{line} %{message}");
     app.setApplicationName("Blixt Zero Controller");
     app.setWindowIcon(QIcon(":/icons/BLIXT_Logo_50x25.png"));
 

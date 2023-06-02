@@ -37,6 +37,16 @@ enum MgmtGroupId
     ID_PERUSER = 64
 };
 
+/*
+ * MGMT event opcodes.
+ */
+enum MgmtEventOp 
+{
+    OP_CMD_RECV = 0x01,
+    OP_CMD_STATUS = 0x02,
+    OP_CMD_DONE = 0x03
+};
+  
 /**
  * mcumgr error codes.
  */
@@ -53,16 +63,6 @@ enum MgmtErrorCode
     ERR_ENOTSUP = 8,       /* Command not supported. */
     ERR_ECORRUPT = 9,       /* Corrupt */
     ERR_EPERUSER = 256
-};
-
-/*
- * MGMT event opcodes.
- */
-enum MgmtEventOp 
-{
-    OP_CMD_RECV = 0x01,
-    OP_CMD_STATUS = 0x02,
-    OP_CMD_DONE = 0x03
 };
 
 

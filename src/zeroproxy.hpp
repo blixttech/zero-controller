@@ -9,8 +9,8 @@
 #include <QTimer>
 #include <QUrl>
 
-#include "smpclient.hpp"
-#include "smpimagemgmt.hpp"
+#include "smp/client.hpp"
+#include "smp/imagemgmt.hpp"
 
 namespace zero {
 
@@ -83,6 +83,27 @@ public:
      */
     void toggle();
 
+    /*
+     * Sends a firmware update
+     */
+    void sendFirmwareUpdate(const QByteArray& fw);
+
+
+    /*
+     * Returns the firmware update status
+     * value < 0 means not upload ongoing
+    */
+    uint16_t firmwareUpdateProgress();
+
+    
+    bool isFirmwareUpdateOngoing();
+    /*
+        Returns true if successful,
+        Otherwise false,
+        std::nullopt if never ran
+    */
+    std::optional<bool> didFirmwareUpdateSucceed();
+
 signals:
     void statusUpdated();
     void unsubscribed();
@@ -107,7 +128,8 @@ private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
 
     void onSwitchReplyFinished(QCoapReply *reply);
-    void processSmpReply(std::shared_ptr<smp::SmpReply> reply);
+        
+    void processSmpGetStateOfImagesResp(std::shared_ptr<smp::GetStateOfImagesResp> reply);
 
 private:
     enum ConnectionState
@@ -160,7 +182,7 @@ private:
     uint32_t mcuTemp_;
     OpenCloseTransition lastTransReason_;
 
-    ::smp::SmpClient smpClient;
+    ::smp::Client smpClient;
     std::vector<::smp::ImageSlot> fwSlots;
     bool useGetForStatus;
 };

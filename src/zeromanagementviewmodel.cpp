@@ -46,8 +46,7 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
     // generate a log message when this method gets called
-/*    qDebug() << QString("row %1, col%2, role %3")
-            .arg(row).arg(col).arg(role);*/
+    // qDebug() << QString("row %1, col%2, role %3").arg(row).arg(col).arg(role);
 
     switch (role) 
     {
@@ -64,7 +63,13 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
                 case FW_SLOT2:
                     return zList->zeros()[row]->fwSlotInfo(1);
                 case UPDATE_STATUS:
-                    return "100%";
+                {
+                    auto z = zList->zeros()[row];
+                    if (z->isFirmwareUpdateOngoing()) return z->firmwareUpdateProgress();
+                    if (!z->didFirmwareUpdateSucceed().has_value()) return "--";
+                    else if (z->didFirmwareUpdateSucceed().value()) return "Completed";
+                    return "Failed";
+                }
                 case INIT_UPDATE:
                     return QVariant();
                 default:
@@ -117,7 +122,7 @@ bool ZeroManagementViewModel::setData(const QModelIndex &index, const QVariant &
 
     if (INIT_UPDATE != col) return false;
 
-    //zList->zeros()[row]->toggle();
+    zList->zeros()[row]->sendFirmwareUpdate(value.toByteArray());
 
     return true;
 }
@@ -173,7 +178,7 @@ void ZeroManagementViewModel::zeroAdded(int newRow)
 void ZeroManagementViewModel::zeroUpdated(int updatedRow)
 {
     auto topLeft = createIndex(updatedRow,0);
-    auto bottomRight = createIndex(updatedRow,columnCount());
+    auto bottomRight = createIndex(updatedRow,columnCount()-1);
 
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }
