@@ -12,14 +12,17 @@ add_executable(zero-controller
     zerocoapscanner.cpp
     zeroliveviewmodel.cpp
     zeroliveviewtab.cpp
+    firmwareupdatefilter.cpp
     openclosebuttondelegate.cpp
     zeromanagementviewmodel.cpp
     zeromanagementviewtab.cpp
-    smpimagemgmt.cpp
-    smpheader.cpp
-    smprequest.cpp
-    smpclient.cpp
-    smpreply.cpp
+    smp/imagemgmt.cpp
+    smp/osmgmt.cpp
+    smp/header.cpp
+    smp/request.cpp
+    smp/client.cpp
+    smp/response.cpp
+    smp/msgutil.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
 )

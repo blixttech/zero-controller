@@ -7,7 +7,9 @@ std::vector<QString> ZeroManagementViewModel::headers({
         QT_TR_NOOP("UUID"),
         QT_TR_NOOP("IP"),
         QT_TR_NOOP("Firmware Slot 0"),
-        QT_TR_NOOP("Firmware Slot 1")
+        QT_TR_NOOP("Firmware Slot 1"),
+        QT_TR_NOOP("Update Status"),
+        QT_TR_NOOP("Initiate Update") // this column should never be displayed, to be used for starting update
 });
 
 ZeroManagementViewModel::ZeroManagementViewModel(std::shared_ptr<ZeroList> zList, QObject *parent) :
@@ -28,6 +30,9 @@ ZeroManagementViewModel::ZeroManagementViewModel(std::shared_ptr<ZeroList> zList
 
 int ZeroManagementViewModel::rowCount(const QModelIndex &parent) const
 {
+    if (parent.isValid())
+        return 0;
+    
     return zList->zeros().size();
 }
 
@@ -41,8 +46,7 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
     int row = index.row();
     int col = index.column();
     // generate a log message when this method gets called
-/*    qDebug() << QString("row %1, col%2, role %3")
-            .arg(row).arg(col).arg(role);*/
+    // qDebug() << QString("row %1, col%2, role %3").arg(row).arg(col).arg(role);
 
     switch (role) 
     {
@@ -50,14 +54,24 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
         {
             switch(col) 
             {
-                case 0:
+                case Z_UUID:
                     return zList->zeros()[row]->uuid(); 
-                case 1:
+                case Z_IP:
                     return zList->zeros()[row]->host();// ? tr("Closed") : tr("Open");
-                case 2:
+                case FW_SLOT1:
                     return zList->zeros()[row]->fwSlotInfo(0);
-                case 3:
+                case FW_SLOT2:
                     return zList->zeros()[row]->fwSlotInfo(1);
+                case UPDATE_STATUS:
+                {
+                    auto z = zList->zeros()[row];
+                    if (z->isFirmwareUpdateOngoing()) return z->firmwareUpdateProgress();
+                    if (!z->didFirmwareUpdateSucceed().has_value()) return "--";
+                    else if (z->didFirmwareUpdateSucceed().value()) return "Completed";
+                    return "Failed";
+                }
+                case INIT_UPDATE:
+                    return QVariant();
                 default:
                    return QVariant(); 
             }
@@ -99,7 +113,6 @@ QVariant ZeroManagementViewModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-#if 0
 bool ZeroManagementViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (Qt::EditRole != role) return false;
@@ -107,13 +120,14 @@ bool ZeroManagementViewModel::setData(const QModelIndex &index, const QVariant &
     int row = index.row();
     int col = index.column();
 
-    if (1 != col) return false;
+    if (INIT_UPDATE != col) return false;
 
-    zList->zeros()[row]->toggle();
+    zList->zeros()[row]->sendFirmwareUpdate(value.toByteArray());
 
     return true;
 }
 
+#if 0
 Qt::ItemFlags ZeroManagementViewModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -136,11 +150,16 @@ QVariant ZeroManagementViewModel::headerData(int section, Qt::Orientation orient
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    if (orientation == Qt::Horizontal) {
+    if (orientation == Qt::Horizontal) 
+    {
         if (section > (headers.size()-1))
             return QVariant();
         
         return headers[section];    
+    }
+    if (orientation == Qt::Vertical) 
+    {
+        return QString::number(section+1) ;
     }
     return QVariant();
 }
@@ -159,7 +178,7 @@ void ZeroManagementViewModel::zeroAdded(int newRow)
 void ZeroManagementViewModel::zeroUpdated(int updatedRow)
 {
     auto topLeft = createIndex(updatedRow,0);
-    auto bottomRight = createIndex(updatedRow,columnCount());
+    auto bottomRight = createIndex(updatedRow,columnCount()-1);
 
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }

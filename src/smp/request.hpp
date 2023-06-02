@@ -1,23 +1,23 @@
 #pragma once
 #include <QCborStreamWriter>
 
-#include "smpheader.hpp"
+#include "header.hpp"
 namespace smp {
 
-class SmpRequest 
+class Request 
 {
     public:
-    SmpRequest(uint8_t nh_op, uint8_t _res1, uint8_t nh_flags,
+    Request(uint8_t nh_op, uint8_t _res1, uint8_t nh_flags,
                 uint16_t nh_len, uint16_t nh_group, 
                 uint8_t nh_seq, uint8_t nh_id);
 
     virtual void serialize(QByteArray& writer);
 
-    SmpHeader getResponseHdr() const;
+    Header getResponseHdr() const;
 
     void setSeq(uint8_t seq);
 
     protected:
-    SmpHeader header; 
+    Header header; 
 };
 } // end of namespace

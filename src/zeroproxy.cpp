@@ -1,5 +1,4 @@
 #include "zeroproxy.hpp"
-#include "smpimagemgmt.hpp"
 
 #include <QtEndian>
 #include <QVariant>
@@ -28,7 +27,10 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     smpClient(url.host(),1337),
     fwSlots(), useGetForStatus(pullStatusUpdate)
 {
-    connect(&smpClient, &smp::SmpClient::replyReceived, this, &ZeroProxy::processSmpReply);
+    connect(&smpClient, &smp::Client::receivedGetStateOfImagesResp, this, &ZeroProxy::processSmpGetStateOfImagesResp);
+    connect(&smpClient, &smp::Client::firmwareUpdateProgressing, this, &ZeroProxy::statusUpdated);
+    connect(&smpClient, &smp::Client::firmwareUpdateCompleted, this, &ZeroProxy::statusUpdated);
+    connect(&smpClient, &smp::Client::firmwareUpdateFailed, this, &ZeroProxy::statusUpdated);
     initStaleDetection();
 }
 
@@ -81,11 +83,10 @@ void ZeroProxy::pullStatusUpdate()
             {
                 if (QtCoap::ResponseCode::Content == reply->responseCode()) 
                 {
-                    qDebug() << "Going in here";
                     this->onStatusUpdate(reply, reply->message());
                 }
                 reply->deleteLater();
-            ;}
+            }
     );
     updateTimer.start();
 }
@@ -109,14 +110,14 @@ void ZeroProxy::initStaleDetection()
 
     // 1. ConnectState (also starting state)
     setupTimer(connectTimer, 10000, connect_state, connect_state);
-    connect_state->addTransition(&smpClient, &smp::SmpClient::connectionEstablished, smpinfo_state);
+    connect_state->addTransition(&smpClient, &smp::Client::connectionEstablished, smpinfo_state);
     connect(connect_state, &QState::entered,
             [&]()
             {
                 qDebug() << "Entering connect";
                 state_ = ConnectionState::Offline;
                 connectTimer.start();
-                smpClient.connect();
+                smpClient.connectToHost();
             }
     );
     connect(connect_state, &QState::exited,
@@ -473,6 +474,26 @@ void ZeroProxy::toggle()
     //emit toggling();
 }
 
+void ZeroProxy::sendFirmwareUpdate(const QByteArray& fw)
+{
+    smpClient.sendFirmwareUpdate(fw);        
+}
+
+uint16_t ZeroProxy::firmwareUpdateProgress()
+{
+    return smpClient.firmwareUpdateProgress();
+}
+
+bool ZeroProxy::isFirmwareUpdateOngoing()
+{
+    return smpClient.isFirmwareUpdateOngoing();
+}
+    
+std::optional<bool> ZeroProxy::didFirmwareUpdateSucceed()
+{
+    return smpClient.didFirmwareUpdateSucceed();        
+}
+    
 void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
 {
     reply->disconnect();
@@ -489,27 +510,15 @@ void ZeroProxy::onSwitchReplyFinished(QCoapReply *reply)
 void ZeroProxy::requestSmpInfo()
 {
     qDebug() << "Sending SMP request";
-    smp::ImageMgmtStateReq req;
+    smp::GetStateOfImagesReq req;
     auto sst = smpClient.send(req);
 }
 
-void ZeroProxy::processSmpReply(std::shared_ptr<smp::SmpReply> reply)
+void ZeroProxy::processSmpGetStateOfImagesResp(std::shared_ptr<smp::GetStateOfImagesResp> reply)
 {
-    if (reply->status() != smp::SmpReply::Status::Ok)
-    {
-        qWarning() << "Received invalid SmpReply";    
-        return;
-    }
-
     qDebug() << "Loading image informations";
-    smp::ImageMgmtStatePayload pL;
-    if (!reply->getPayload(pL)) 
-    {
-        qDebug() << "Failure when parsing Image payload";
-        return;
-    }
 
-    fwSlots = pL.fwSlots;
+    fwSlots = reply->images();
     emit receivedSmpInfo();
 }
 
