@@ -24,6 +24,12 @@ NetworkInterfaceList::NetworkInterfaceList(QObject *parent) :
 
         if (i->addressEntries().size() == 0) continue; 
 
+        auto addresses = i->addressEntries();
+        // searching for a valid IPv4 address
+        auto addr = findValidIPv4Address(addresses);
+        
+        if (addr.ip().isNull()) continue; //no valid address, skip interface
+            
         interfaces.append(*i);
     }
 }
@@ -32,6 +38,18 @@ int NetworkInterfaceList::rowCount(const QModelIndex &parent) const
 {
     return interfaces.size()+1;
 }
+
+QNetworkAddressEntry NetworkInterfaceList::findValidIPv4Address( QList<QNetworkAddressEntry>&  addresses) const
+{
+    for (int i = 0; i < addresses.size(); ++i)
+    {
+        auto ipAddr = addresses[i].ip();
+        if ((ipAddr.protocol() == QAbstractSocket::IPv4Protocol) 
+            && (ipAddr.isGlobal()))
+        return addresses[i]; // we found a valid addres
+    }
+    return QNetworkAddressEntry(); // no valid address, return null 
+} 
 
 QVariant NetworkInterfaceList::data(const QModelIndex &index, int role) const
 {
@@ -48,11 +66,12 @@ QVariant NetworkInterfaceList::data(const QModelIndex &index, int role) const
 
     auto item = interfaces[row];
 
-    auto addresses = item.addressEntries();
-    if (0 == addresses.size())
+    auto aE = item.addressEntries();
+    auto address = findValidIPv4Address(aE);
+    if (address.ip().isNull())
         return item.name();
     else
-        return item.name() + " : [" + item.addressEntries()[0].ip().toString() + "]";
+        return item.name() + " : [" + address.ip().toString() + "]";
 }
 
 QVariant NetworkInterfaceList::headerData(int section, Qt::Orientation orientation, int role) const
@@ -67,7 +86,9 @@ QVariant NetworkInterfaceList::headerData(int section, Qt::Orientation orientati
 void NetworkInterfaceList::selectedInterface(int index)
 {
     if (0 == index) return;
-    emit scan(interfaces[index-1].addressEntries()[0].broadcast(), 5683);
+    auto ae = interfaces[index-1].addressEntries();
+    auto va = findValidIPv4Address(ae);
+    emit scan(va.broadcast(), 5683);
 }
 
 } //end namespace
