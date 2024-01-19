@@ -17,6 +17,8 @@ jobs:
           # afterwards to generate the installer filename.
           fetch-depth: 0
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
 
       - name: Update environment
         shell: bash
@@ -41,7 +43,8 @@ jobs:
             libxcb-keysyms1 \
             libxcb-randr0 \
             libxcb-render-util0 \
-            libxcb-shape0
+            libxcb-shape0 \
+            protobuf-compiler
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
