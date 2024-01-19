@@ -40,7 +40,7 @@ void MainWindow::connectSignals()
 
     connect(zeroCoapScanner.get(), &ZeroCoapScanner::newZeroDetected,    
         [=]( const QString& uuid, const QUrl& url, 
-             const QString& hwversion, const QString& macaddress)
+             const QString& hwversion, const QString& macaddress, bool new_protocol)
         {
             // if the zero is already registered, we are done
             if (zeroList->contains(uuid))
@@ -52,7 +52,7 @@ void MainWindow::connectSignals()
             else 
             {
                 // create a new proxy
-                auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress, update_int);
+                auto zProxy = std::make_shared<ZeroProxy>(url, uuid, hwversion, macaddress, update_int, new_protocol);
                 zeroList->insert(zProxy);
             }
         }

@@ -1,5 +1,7 @@
 INCLUDE (CheckIncludeFiles)
 
+#protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS zc_messages.proto)
+
 add_executable(zero-controller
     networkinterfacelist.cpp
     main.cpp
@@ -25,6 +27,13 @@ add_executable(zero-controller
     smp/msgutil.cpp
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
+    zc_messages.proto
+)
+
+protobuf_generate(
+    TARGET zero-controller
+    LANGUAGE cpp
+    PROTOC_OPTIONS --experimental_allow_proto3_optional
 )
 
 set_property(TARGET zero-controller PROPERTY OUTPUT_NAME "zero-controller")
@@ -34,14 +43,22 @@ set_property(TARGET zero-controller PROPERTY AUTORCC ON)
 set_property(TARGET zero-controller PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
 set_property(TARGET zero-controller PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_include_directories(zero-controller PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(zero-controller PRIVATE ${Qt6Core_INCLUDE_DIRS})
-target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
-target_include_directories(zero-controller PRIVATE ${Qt6Coap_INCLUDE_DIRS})
-target_include_directories(zero-controller PRIVATE ${Qt6Svg_INCLUDE_DIRS})
-target_include_directories(zero-controller PRIVATE ${Qt6Network_INCLUDE_DIRS})
 
+target_include_directories(zero-controller 
+                            PUBLIC 
+                            ${Protobuf_INCLUDE_DIRS}
+                            ${CMAKE_CURRENT_BINARY_DIR}
+                           )
 
+target_include_directories(zero-controller 
+                            PRIVATE 
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${Qt6Core_INCLUDE_DIRS}
+                            ${Qt6Network_INCLUDE_DIRS}
+                            ${Qt6Coap_INCLUDE_DIRS}
+                            ${Qt6Svg_INCLUDE_DIRS}
+                            ${Qt6Network_INCLUDE_DIRS}
+                          )
 
 target_compile_definitions(zero-controller
     PRIVATE $<$<COMPILE_LANGUAGE:CXX>:SOURCE_VERSION="${SOURCE_VERSION}">
@@ -67,7 +84,9 @@ target_link_libraries(zero-controller Qt6::Network)
 target_link_libraries(zero-controller Qt6::StateMachine)
 target_link_libraries(zero-controller Qt6::Svg)
 target_link_libraries(zero-controller Qt6::Coap)
+target_link_libraries(zero-controller Qwt::Qwt)
 target_link_libraries(zero-controller ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(zero-controller ${Protobuf_LIBRARIES})
 
 if(UNIX)
 include(GNUInstallDirs)

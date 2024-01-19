@@ -1,4 +1,9 @@
 #include "zeroproxy.hpp"
+#include <qcoapoption.h>
+#include <qcoapreply.h>
+#include <qcoaprequest.h>
+#include <qpoint.h>
+#include <qwt_plot_curve.h>
 
 #include <QtEndian>
 #include <QVariant>
@@ -6,12 +11,24 @@
 #include <QState>
 #include <QFinalState>
 
+#include <string>
+
+#include "zc_messages.pb.h"
+#include "common.hpp"
+
+#ifdef USE_WINSOCK2
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 namespace zero {
 
 ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
             const QString& hardwareVersion,
             const QString& macAddress,
             uint32_t updateIntervalVal,
+            bool new_protocol,
             bool pullStatusUpdate,
             QObject *parent) : QObject(parent),
     coapClient(QtCoap::SecurityMode::NoSecurity),
@@ -24,14 +41,23 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     uptime_(0), vRms_(0), cRms_(0),
     powerInTemp_(0), powerOutTemp_(0), ambientTemp_(0), mcuTemp_(0),
     lastTransReason_(OpenCloseTransition::NONE),
+    vSeries_(), cSeries_(), pSeries_(), fSeries_(),
+    vCurve_("Voltage"), cCurve_("Current"), pCurve_("Power"), fCurve_("Frequency"),
     smpClient(url.host(),1337),
-    fwSlots(), useGetForStatus(pullStatusUpdate)
+    fwSlots(), useGetForStatus(pullStatusUpdate),
+    new_protocol(new_protocol)
 {
     connect(&smpClient, &smp::Client::receivedGetStateOfImagesResp, this, &ZeroProxy::processSmpGetStateOfImagesResp);
     connect(&smpClient, &smp::Client::firmwareUpdateProgressing, this, &ZeroProxy::statusUpdated);
     connect(&smpClient, &smp::Client::firmwareUpdateCompleted, this, &ZeroProxy::statusUpdated);
     connect(&smpClient, &smp::Client::firmwareUpdateFailed, this, &ZeroProxy::statusUpdated);
     initStaleDetection();
+
+    vCurve_.setData(&vSeries_);
+    cCurve_.setData(&cSeries_);
+    pCurve_.setData(&pSeries_);
+    fCurve_.setData(&fSeries_);
+    
 }
 
 ZeroProxy::~ZeroProxy()
@@ -47,20 +73,42 @@ void ZeroProxy::subscribe()
         return;
     }
 
-    qDebug() << "Sending subscribe request";
     auto oUrl = url_;
     oUrl.setPath("/status");
-    QUrlQuery params;
-    params.addQueryItem("p", QString::number(updateInterval_));
-    oUrl.setQuery(params);
 
     if (nullptr != observerReply)
     {
+//        coapClient.cancelObserve(observerReply);
         observerReply->disconnect();
         observerReply->deleteLater();
     }
+        
+    if (new_protocol) {
+        qDebug() << "Sending new protocol subscribe request";
+        ZCMessage req;
+        req.mutable_req()->mutable_set_config()->mutable_config()->mutable_notif()->set_interval(updateInterval_);
 
-    observerReply = coapClient.observe(oUrl);
+        std::string serialised = req.SerializeAsString();
+        QByteArray body(serialised.c_str(), serialised.length());
+        
+        auto creq = QCoapRequest(oUrl);
+        QCoapOption option(QCoapOption::OptionName::ContentFormat, htons(NANOPB_CONTENT_FORMAT));
+        creq.addOption(option);
+        creq.setPayload(body);
+        QCoapOption option2(QCoapOption::OptionName::Observe, 0);
+        creq.addOption(option2);
+        observerReply = coapClient.post(creq);
+                
+    } else {
+        qDebug() << "Sending old protocol subscribe request";
+        QUrlQuery params;
+        params.addQueryItem("p", QString::number(updateInterval_));
+        oUrl.setQuery(params);
+        
+        observerReply = coapClient.observe(oUrl);
+    }
+
+
     connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
 }
 
@@ -353,6 +401,12 @@ QString ZeroProxy::lastTransitionReasonStr() const
             return "Overcurrent protection test";
         case OpenCloseTransition::UVP:
             return "Undervoltage protection";
+    	  case OpenCloseTransition::OVP:
+            return "Over voltage protection";
+        case OpenCloseTransition::UFP:
+            return "Under frequency protection";
+        case OpenCloseTransition::OFP:
+            return "Over frequency protection";
     }
     return "Unknown";
 }
@@ -387,65 +441,123 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 
     if (!message.hasOption(QCoapOption::OptionName::ContentFormat)) return;
 
+
     QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
-    if(!format.isValid() || format.uintValue() != 0) {
-        qDebug() << "Invalid content format";
+    bool is_protob = ntohs(format.uintValue()) == NANOPB_CONTENT_FORMAT;
+    if(!format.isValid() || (format.uintValue() != 0 && !is_protob)) {
+        qDebug() << "Status message: Invalid content format";
         return;
     }
 
     qDebug() << "Message payload " << message.payload();
 
-    /* Message format is a CSV, fields are
-     * 0      k_uptime_get_32(), 
-     * 1      (uint8_t)bcb_is_on(), 
-     * 2      (uint8_t), cause for last switch state transition 
-     * 3      (uint8_t), trip curve state
-     * 4      bcb_get_current(), 
-     * 5      bcb_get_current_rms(), 
-     * 6      bcb_get_voltage(),
-     * 7      bcb_get_voltage_rms(), 
-     * 8      bcb_get_temp(BCB_TEMP_SENSOR_PWR_IN),
-     * 9      bcb_get_temp(BCB_TEMP_SENSOR_PWR_OUT), 
-     * 10     bcb_get_temp(BCB_TEMP_SENSOR_AMB),
-     * 11     bcb_get_temp(BCB_TEMP_SENSOR_MCU));
-     */
+    if (is_protob && new_protocol) {
+        ZCMessage msg;
+        msg.ParseFromArray(reinterpret_cast<void*>(message.payload().data()), message.payload().length());
+        if (!msg.res().has_status())
+        {
+            qDebug() << "Status update message does not contain status";
+            return;        
+        }
+        auto status = msg.res().status();
+            
+        uptime_ = status.uptime();
+        closed_ = status.switch_state() == ZC_SWITCH_STATE_CLOSED;
+        uint8_t tmp = status.cause();
+        if (tmp > 9)
+        {
+            qWarning() << "Invalid OpenCloseTransition reason";
+            lastTransReason_ = OpenCloseTransition::NONE;
+        }
+        else 
+        {
+            lastTransReason_ = static_cast<OpenCloseTransition>(tmp);
+        }
+        
+        cRms_ = status.current();
+        vRms_ = status.voltage();
 
-    const QList<QByteArray> values = message.payload().split(',');
-    if (values.length() < 12) 
-    {
-        qWarning() << "Invalid version format in Zero Status update message";
-        return;
+        for (int j = 0; j < status.temp_size(); ++j)
+        {
+            auto ts = status.temp(j);
+            if (ts.loc() == ZC_TEMP_LOC_AMB)
+                ambientTemp_ = ts.value();
+            else if (ts.loc() == ZC_TEMP_LOC_MCU_1)
+                mcuTemp_ = ts.value();
+            else if (ts.loc() == ZC_TEMP_LOC_BRD_1)
+                powerInTemp_ = ts.value();
+            else if (ts.loc() == ZC_TEMP_LOC_BRD_2)
+                powerOutTemp_ = ts.value();
+        }
+
+        auto fcRms = cRms_ / 1000.0;
+        auto fvRms = vRms_ / 1000.0;
+        auto ffreq = status.freq() / 1000.0;
+        cSeries_.append(QPointF(uptime_, fcRms ));
+        vSeries_.append(QPointF(uptime_, fvRms ));
+        pSeries_.append(QPointF(uptime_, fcRms * fvRms));
+        fSeries_.append(QPointF(uptime_, ffreq ));
+              
+    } else {
+
+        /* Message format is a CSV, fields are
+         * 0      k_uptime_get_32(), 
+         * 1      (uint8_t)bcb_is_on(), 
+         * 2      (uint8_t), cause for last switch state transition 
+         * 3      (uint8_t), trip curve state
+         * 4      bcb_get_current(), 
+         * 5      bcb_get_current_rms(), 
+         * 6      bcb_get_voltage(),
+         * 7      bcb_get_voltage_rms(), 
+         * 8      bcb_get_temp(BCB_TEMP_SENSOR_PWR_IN),
+         * 9      bcb_get_temp(BCB_TEMP_SENSOR_PWR_OUT), 
+         * 10     bcb_get_temp(BCB_TEMP_SENSOR_AMB),
+         * 11     bcb_get_temp(BCB_TEMP_SENSOR_MCU));
+         */
+
+        const QList<QByteArray> values = message.payload().split(',');
+        if (values.length() < 12) 
+        {
+            qWarning() << "Invalid version format in Zero Status update message";
+            return;
+        }
+
+        uptime_ = QString::fromUtf8(values[0]).toUInt();
+        closed_ = QString::fromUtf8(values[1]).toInt();
+        uint8_t tmp = QString::fromUtf8(values[2]).toUInt();
+        if (tmp > 9)
+        {
+            qWarning() << "Invalid OpenCloseTransition reason";
+        }
+        else 
+        {
+            lastTransReason_ = static_cast<OpenCloseTransition>(tmp);
+        }
+
+        cRms_ = QString::fromUtf8(values[5]).toUInt();
+        vRms_ = QString::fromUtf8(values[7]).toUInt();
+
+        powerInTemp_ = QString::fromUtf8(values[8]).toUInt();
+        powerOutTemp_ = QString::fromUtf8(values[9]).toUInt();
+        ambientTemp_ = QString::fromUtf8(values[10]).toUInt();
+        mcuTemp_ = QString::fromUtf8(values[11]).toUInt();
     }
-
-    uptime_ = QString::fromUtf8(values[0]).toUInt();
-    closed_ = QString::fromUtf8(values[1]).toInt();
-    uint8_t tmp = QString::fromUtf8(values[2]).toUInt();
-    if (tmp > 5)
-    {
-        qWarning() << "Invalid OpenCloseTransition reason";
-    }
-    else 
-    {
-        lastTransReason_ = static_cast<OpenCloseTransition>(tmp);
-    }
-
-    cRms_ = QString::fromUtf8(values[5]).toUInt();
-    vRms_ = QString::fromUtf8(values[7]).toUInt();
-
-    powerInTemp_ = QString::fromUtf8(values[8]).toUInt();
-    powerOutTemp_ = QString::fromUtf8(values[9]).toUInt();
-    ambientTemp_ = QString::fromUtf8(values[10]).toUInt();
-    mcuTemp_ = QString::fromUtf8(values[11]).toUInt();
 
     emit statusUpdated();
    
     if (!useGetForStatus)
     {
+        qDebug() << "Has observe option: " << message.hasOption(QCoapOption::OptionName::Observe);
         QCoapOption observe = message.option(QCoapOption::OptionName::Observe);
         if (!observe.isValid())
         {
             qDebug() << "Subscription refused";
             emit subscriptionRefused();
+        }
+        else
+        {
+            qDebug() << "Subscription online";
+            emit live();
         }
     }
     else
@@ -457,19 +569,41 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 
 void ZeroProxy::toggle()
 {
+    qDebug() << "Toggeling the breaker";
     QUrl url(url_);
-    url.setPath("/switch");
-    QUrlQuery params;
 
-    if (closed()) {
-        params.addQueryItem("a", "open");
-    } else {
-        params.addQueryItem("a", "close");
+    QCoapReply *reply = nullptr;
+
+    if (new_protocol) 
+    {
+        url.setPath("/device");
+        ZCMessage msg;
+        msg.mutable_req()->mutable_cmd()->set_cmd(ZC_DEVICE_CMD_TOGGLE);
+        std::string serialised = msg.SerializeAsString();
+        QByteArray body(serialised.c_str(), serialised.length());
+
+        QCoapRequest req(url);
+        QCoapOption option(QCoapOption::OptionName::ContentFormat, htons(NANOPB_CONTENT_FORMAT));
+        req.addOption(option);
+        req.setPayload(body);
+
+        reply = coapClient.post(req);
     }
+    else 
+    {    
+        url.setPath("/switch");
+        QUrlQuery params;
 
-    url.setQuery(params);
+        if (closed()) {
+            params.addQueryItem("a", "open");
+        } else {
+            params.addQueryItem("a", "close");
+        }
+
+        url.setQuery(params);
+        reply = coapClient.post(url);
+    }
     
-    auto reply = coapClient.post(url);
     connect(reply, &QCoapReply::finished, this, &ZeroProxy::onSwitchReplyFinished);
     //emit toggling();
 }
@@ -554,6 +688,26 @@ uint32_t ZeroProxy::mcuTemp() const
 void ZeroProxy::stop()
 {
     emit shutdownRequested();
+}
+    
+QwtPlotCurve* ZeroProxy::voltageSeries()
+{
+    return &vCurve_;        
+}
+    
+QwtPlotCurve* ZeroProxy::currentSeries()
+{
+    return &cCurve_;   
+}
+    
+QwtPlotCurve* ZeroProxy::powerSeries()
+{
+    return &pCurve_;        
+}
+    
+QwtPlotCurve* ZeroProxy::frequencySeries()
+{
+    return &fCurve_;        
 }
 
 } // end namespace

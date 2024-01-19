@@ -8,6 +8,7 @@ qt
 tools
 artifacts
 ext
+.cache
 
 # Files
 compile_commands.json

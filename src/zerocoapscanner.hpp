@@ -20,7 +20,7 @@ class ZeroCoapScanner : public QObject
     
     signals:
         void newZeroDetected(const QString& uuid, const QUrl& url, 
-                             const QString& hwversion, const QString& macaddress);
+                             const QString& hwversion, const QString& macaddress, bool new_protocol);
 
     private slots:
         void onVersionReply(QCoapReply *reply);
@@ -28,11 +28,12 @@ class ZeroCoapScanner : public QObject
         void onCoapDiscovered(const QVector<QCoapResource> &resources, 
                                 const QHostAddress &host, int port);
         bool parseVersion(QCoapReply *reply, QUrl& url, QString& uuid, 
-                            QString& hwversion, QString macaddress);
+                            QString& hwversion, QString& macaddress, bool& new_protocol);
 
     private:
         CoapResourceDiscovery resourceDiscovery_;
         QCoapClient coapClient_;
+
 };
 
 } // end namespace

@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CONAN_DISABLE_CHECK_COMPILER ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 if(NOT SET_UP_CONFIGURATIONS_DONE)
     set(SET_UP_CONFIGURATIONS_DONE TRUE)
@@ -38,8 +40,9 @@ find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Qt6 REQUIRED COMPONENTS StateMachine)
 find_package(Qt6 REQUIRED COMPONENTS Svg)
 find_package(Qt6 REQUIRED COMPONENTS Coap)
-#find_package(Qwt REQUIRED)
+find_package(Qwt REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Protobuf REQUIRED)
 
 qt_standard_project_setup()
 

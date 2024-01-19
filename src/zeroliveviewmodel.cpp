@@ -135,7 +135,16 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 return Qt::Unchecked;*/
             break;
         case Qt::UserRole:
-            return zList->zeros()[row]->isStale(); 
+            return zList->zeros()[row]->isStale();
+        case zero::VoltageSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->voltageSeries()));
+        case zero::CurrentSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->currentSeries()));
+        case zero::PowerSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->powerSeries()));
+        case zero::FrequencySeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->frequencySeries()));
+            
     }
     return QVariant();
 }

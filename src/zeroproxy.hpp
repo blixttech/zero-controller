@@ -9,8 +9,12 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <qwt_plot_curve.h>
+
 #include "smp/client.hpp"
 #include "smp/imagemgmt.hpp"
+
+#include "zerodatastream.hpp"
 
 namespace zero {
 
@@ -26,7 +30,10 @@ public:
         OCP_SW = 3, // over current protection
         OCP_TEST = 4, // over current test
         OTP = 5, // over temperature protection
-        UVP = 6 // under voltage protection
+        UVP = 6, // under voltage protection
+        OVP	= 7, /* Over voltage protection */
+        UFP	= 8, /* Under frequency protection */
+        OFP	= 9 /* Over frequency protection */
     };
 
     ZeroProxy(const QUrl& url,
@@ -34,7 +41,8 @@ public:
             const QString& hardwareVersion,
             const QString& macAddress,
             uint32_t updateIntervalVal = 100,
-            bool pullStatusUpdate = true,
+            bool new_protocol = false,
+            bool pullStatusUpdate = false,
             QObject *parent = nullptr);
 
     virtual ~ZeroProxy();
@@ -51,6 +59,11 @@ public:
     uint32_t voltageRms() const;
     uint32_t currentRms() const;
     bool closed() const;
+
+    QwtPlotCurve* voltageSeries();
+    QwtPlotCurve* currentSeries();
+    QwtPlotCurve* powerSeries();
+    QwtPlotCurve* frequencySeries();
 
     OpenCloseTransition lastTransitionReason() const;
     QString lastTransitionReasonStr() const;
@@ -161,6 +174,7 @@ private:
     ConnectionState state_;
     
 
+    // Data 
     QUrl url_;
     QString uuid_;
     QString hardwareVersion_;
@@ -182,9 +196,21 @@ private:
     uint32_t mcuTemp_;
     OpenCloseTransition lastTransReason_;
 
+    ZeroDataStream vSeries_;
+    ZeroDataStream cSeries_;
+    ZeroDataStream pSeries_;
+    ZeroDataStream fSeries_;
+
+    QwtPlotCurve vCurve_;
+    QwtPlotCurve cCurve_;
+    QwtPlotCurve pCurve_;
+    QwtPlotCurve fCurve_;
+        
     ::smp::Client smpClient;
     std::vector<::smp::ImageSlot> fwSlots;
     bool useGetForStatus;
+
+    bool new_protocol;
 };
 
 } // end namespace
