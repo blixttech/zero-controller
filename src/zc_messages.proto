@@ -99,7 +99,7 @@ message ZCStatus {
 
 /* A point on the trip curve. */
 message ZCCurvePoint {
-	uint32 limit	= 1; /* Current limit in amperes. */
+	uint32 limit	= 1; /* Current limit in milliamperes. */
 	uint32 duration = 2; /* Duration to be spent in milliseconds. */
 }
 
