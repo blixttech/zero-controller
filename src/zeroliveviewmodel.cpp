@@ -144,7 +144,8 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
             return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->powerSeries()));
         case zero::FrequencySeries:
             return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->frequencySeries()));
-            
+        case zero::TripCurve:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->tripCurve()));
     }
     return QVariant();
 }

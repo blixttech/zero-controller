@@ -3,6 +3,8 @@
 #include "zc_messages.pb.h"
 #include "common.hpp"
 
+#include <sstream>
+#include <iomanip>
 
 #ifdef USE_WINSOCK2
 #include <winsock2.h>
@@ -141,7 +143,15 @@ bool ZeroCoapScanner::parseVersion(QCoapReply *reply, QUrl& url, QString& uuid,
         }
 
         auto version = msg.res().version();
-        uuid = QString::fromStdString(version.uuid());
+
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 0; i < version.uuid().size(); ++i)
+        {
+            ss << std::setw(2) << static_cast<unsigned>(version.uuid().data()[i]);
+        }
+        uuid = QString::fromStdString(ss.str());
+            
         macaddress = "N/A";
         hwversion = "N/A";
     }

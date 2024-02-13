@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QPointF>
 #include <QCoapClient>
 #include <QCoapReply>
 #include <QHostAddress>
@@ -9,12 +10,14 @@
 #include <QTimer>
 #include <QUrl>
 
-#include <qwt_plot_curve.h>
+#include <QwtPlotCurve>
 
 #include "smp/client.hpp"
 #include "smp/imagemgmt.hpp"
 
 #include "zerodatastream.hpp"
+
+#include <vector>
 
 namespace zero {
 
@@ -64,6 +67,8 @@ public:
     QwtPlotCurve* currentSeries();
     QwtPlotCurve* powerSeries();
     QwtPlotCurve* frequencySeries();
+
+    std::vector<QPointF>* tripCurve();
 
     OpenCloseTransition lastTransitionReason() const;
     QString lastTransitionReasonStr() const;
@@ -132,6 +137,7 @@ signals:
      */
 
     void receivedSmpInfo();
+    void receivedConfig();
     void live();
     void newUrl();
     void subscriptionRefused();
@@ -141,6 +147,7 @@ private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
 
     void onSwitchReplyFinished(QCoapReply *reply);
+    void onGetConfigFinished(QCoapReply *reply);
         
     void processSmpGetStateOfImagesResp(std::shared_ptr<smp::GetStateOfImagesResp> reply);
 
@@ -155,6 +162,7 @@ private:
     };
 
     void subscribe();
+    void getConfig();
     void pullStatusUpdate();
     void unsubscribe();
     void initStaleDetection();
@@ -167,6 +175,7 @@ private:
     QStateMachine proxyState;
     QTimer connectTimer;
     QTimer smpTimer;
+    QTimer getConfigTimer;
     QTimer subscribeTimer;
     QTimer liveTimer;
     QTimer updateTimer;
@@ -205,6 +214,8 @@ private:
     QwtPlotCurve cCurve_;
     QwtPlotCurve pCurve_;
     QwtPlotCurve fCurve_;
+
+    std::vector<QPointF> tripCurve_;
         
     ::smp::Client smpClient;
     std::vector<::smp::ImageSlot> fwSlots;

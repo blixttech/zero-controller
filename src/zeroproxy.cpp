@@ -43,6 +43,7 @@ ZeroProxy::ZeroProxy(const QUrl& url, const QString& uuid,
     lastTransReason_(OpenCloseTransition::NONE),
     vSeries_(), cSeries_(), pSeries_(), fSeries_(),
     vCurve_("Voltage"), cCurve_("Current"), pCurve_("Power"), fCurve_("Frequency"),
+    tripCurve_(),
     smpClient(url.host(),1337),
     fwSlots(), useGetForStatus(pullStatusUpdate),
     new_protocol(new_protocol)
@@ -112,6 +113,69 @@ void ZeroProxy::subscribe()
     connect(observerReply, &QCoapReply::notified, this, &ZeroProxy::onStatusUpdate);
 }
 
+void ZeroProxy::getConfig()
+{
+    if (!new_protocol) return;
+
+    
+    auto oUrl = url_;
+    oUrl.setPath("/config");
+
+    ZCMessage msg;
+    msg.mutable_req()->mutable_get_config()->mutable_curve()->set_direction(ZCFlowDirection::ZC_FLOW_DIRECTION_BACKWARD);
+    std::string serialised = msg.SerializeAsString();
+    QByteArray body(serialised.c_str(), serialised.length());
+
+    QCoapRequest req(oUrl);
+    QCoapOption option(QCoapOption::OptionName::ContentFormat, htons(NANOPB_CONTENT_FORMAT));
+    req.addOption(option);
+    req.setPayload(body);
+
+    QCoapReply* reply = coapClient.post(req);
+    connect(reply, &QCoapReply::finished, this, &ZeroProxy::onGetConfigFinished);
+}
+
+void ZeroProxy::onGetConfigFinished(QCoapReply *reply)
+{
+            
+    if (reply->errorReceived() != QtCoap::Error::Ok)
+       return;
+
+    qDebug() << "Responsecode: " << reply->responseCode();
+
+
+    auto message = reply->message();
+    if (!message.hasOption(QCoapOption::OptionName::ContentFormat)) return;
+
+
+    QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
+    bool is_protob = ntohs(format.uintValue()) == NANOPB_CONTENT_FORMAT;
+    if(!format.isValid() || (format.uintValue() != 0 && !is_protob)) {
+        qDebug() << "Status message: Invalid content format";
+        return;
+    }
+
+    qDebug() << "Message payload " << message.payload();
+
+    ZCMessage msg;
+    msg.ParseFromArray(reinterpret_cast<void*>(message.payload().data()), message.payload().length());
+    if (!(msg.res().has_config() && msg.res().config().has_curve()))
+    {
+        qDebug() << "Config reply message does not contain tripping curve";
+        return;        
+    }
+
+    auto curve = msg.res().config().curve();
+    auto psize = curve.points_size();
+    for (int i = 0; i < psize; ++i)
+    {
+        auto p = curve.points(i);
+        tripCurve_.push_back(QPointF(p.limit(), p.duration()));
+    }
+
+    emit receivedConfig();    
+}
+
 void ZeroProxy::pullStatusUpdate()
 {
     qDebug() << "Using get for status update";
@@ -150,6 +214,11 @@ void ZeroProxy::initStaleDetection()
     qDebug() << "Configure statemachine";
     auto connect_state = new QState();
     auto smpinfo_state = new QState();
+    QState* get_config_state = nullptr;
+
+    if (new_protocol)
+        get_config_state = new QState();
+        
     auto subscribe_state = new QState();
     auto stale_state = new QState();
     auto live_state = new QState(); 
@@ -179,7 +248,11 @@ void ZeroProxy::initStaleDetection()
 
     // 2. SmpInfo State
     setupTimer(smpTimer, 10000, smpinfo_state, smpinfo_state);
-    smpinfo_state->addTransition(this, &ZeroProxy::receivedSmpInfo, subscribe_state);
+    if (new_protocol)
+        smpinfo_state->addTransition(this, &ZeroProxy::receivedSmpInfo, get_config_state);
+    else
+        smpinfo_state->addTransition(this, &ZeroProxy::receivedSmpInfo, subscribe_state);
+        
     connect(smpinfo_state, &QState::entered,
             [&]() 
             {
@@ -197,8 +270,33 @@ void ZeroProxy::initStaleDetection()
             }
     );
     proxyState.addState(smpinfo_state);
-   
-    // 3. the subscribe state
+
+    // 3a. get_config state
+    if (new_protocol)
+    {
+                
+        setupTimer(getConfigTimer, 10000, get_config_state, get_config_state);
+        get_config_state->addTransition(this, &ZeroProxy::receivedConfig, subscribe_state);
+        
+        connect(get_config_state, &QState::entered,
+                [&]() 
+                {
+                    qDebug() << "Entering get_config";
+                    getConfigTimer.start();
+                    getConfig();
+                }
+        );
+        connect(get_config_state, &QState::exited,
+                [&]() 
+                {
+                    qDebug() << "Exiting get_config";
+                    getConfigTimer.stop();
+                }
+        );
+        proxyState.addState(get_config_state);
+    }
+       
+    // 3b. the subscribe state
     setupTimer(subscribeTimer, 10000, subscribe_state, stale_state); 
     subscribe_state->addTransition(this, &ZeroProxy::live, live_state);
     subscribe_state->addTransition(this, &ZeroProxy::subscriptionRefused, stale_state);
@@ -710,4 +808,10 @@ QwtPlotCurve* ZeroProxy::frequencySeries()
     return &fCurve_;        
 }
 
+// TODO: *cringe* not a nice API at all, need to clean this up
+std::vector<QPointF>* ZeroProxy::tripCurve()
+{
+    return &tripCurve_; 
+}
+    
 } // end namespace

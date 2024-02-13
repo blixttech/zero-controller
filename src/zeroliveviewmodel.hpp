@@ -9,7 +9,8 @@ namespace zero {
         VoltageSeries = 0x0101,
         CurrentSeries = 0x0102,
         PowerSeries   = 0x0103,
-        FrequencySeries = 0x0104
+        FrequencySeries = 0x0104,
+        TripCurve = 0x0105
     };
 
 
