@@ -1,11 +1,9 @@
 #pragma once
-#include <qpushbutton.h>
-#include <qtabwidget.h>
+#include <QTabWidget>
 #include <QWidget>
 #include <QTableWidget>
-#include <QTabWidget> 
 #include <QPushButton>
-
+#include <QComboBox>
 #include <QwtPlot>
 
 #include "smp/smp.hpp"
@@ -52,16 +50,17 @@ class ZeroLiveViewTab : public QWidget
         QwtPlotCurve  tCurve;
         ZeroDataStream* tCurvePoints;
         ZeroDataStream tCurvePointsOriginal;
-        QTableWidget* zeroTripTable;
-        QPushButton*  addTripPointB;
-        QPushButton*  delTripPointB;
-        QPushButton*  applyTripCurveB;
-        QPushButton*  resetTripCurveB;
-
-        bool isTripCurveValid();
-        void updateTripCurvePlot();
-        void addTripPoint(double currentInA = 0.0, int timeInMs = 0);
         
+
+        bool isTripCurveValid(QTableWidget* zeroTable);
+        void updateTripCurvePlot(QTableWidget* zeroTable);
+        void addTripPoint(QTableWidget* zeroTable, double currentInA = 0.0, int timeInMs = 0);
+
+
+        QWidget* createStandardTripCurveWiget(int trip_type, QwtPlotCurve* curve);
+        QWidget* createCustomTripCurveWidget(QwtPlotCurve* curve);
+    
+        QWidget* createTripSettingsWidget();        
          
 };
 
