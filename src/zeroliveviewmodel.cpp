@@ -1,4 +1,5 @@
 #include "zeroliveviewmodel.hpp"
+#include <qpoint.h>
 #include <QBrush>
 
 namespace zero {
@@ -152,17 +153,28 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
 
 bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (Qt::EditRole != role) return false;
+    switch (role) {
+        case Qt::EditRole:
+        { 
+            int row = index.row();
+            int col = index.column();
 
-    int row = index.row();
-    int col = index.column();
+            if (1 != col) return false;
 
-    if (1 != col) return false;
-
-    zList->zeros()[row]->toggle();
-    emit dataChanged(index, index, {role}); 
-        
-    return true;
+            zList->zeros()[row]->toggle();
+            emit dataChanged(index, index, {role}); 
+    
+            return true;
+        }
+        case zero::TripCurve:
+        {
+            std::vector<QPointF>* curve = static_cast<std::vector<QPointF>*>(value.value<void*>());
+            int row = index.row();
+            zList->zeros()[row]->setTripCurve(*curve);
+            return true;                
+        }
+    }
+    return false;
 }
 
 QVariant ZeroLiveViewModel::headerData(int section, Qt::Orientation orientation, int role) const
