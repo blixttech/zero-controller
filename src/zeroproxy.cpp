@@ -814,4 +814,46 @@ std::vector<QPointF>* ZeroProxy::tripCurve()
     return &tripCurve_; 
 }
     
+void ZeroProxy::setTripCurve(std::vector<QPointF>& curve)
+{        
+    if (!new_protocol) return;
+
+    auto oUrl = url_;
+    oUrl.setPath("/config");
+
+    ZCMessage msg;
+    ZCCurveConfig* curveP = msg.mutable_req()->mutable_set_config()->mutable_config()->mutable_curve();
+    curveP->set_direction(ZCFlowDirection::ZC_FLOW_DIRECTION_BACKWARD);
+
+    for (int i = 0; i < curve.size(); ++i)
+    {
+        auto p = curveP->add_points(); 
+        p->set_limit(curve[i].rx());
+        p->set_duration(curve[i].ry());
+    }
+        
+    std::string serialised = msg.SerializeAsString();
+    QByteArray body(serialised.c_str(), serialised.length());
+
+    QCoapRequest req(oUrl);
+    QCoapOption option(QCoapOption::OptionName::ContentFormat, htons(NANOPB_CONTENT_FORMAT));
+    req.addOption(option);
+    req.setPayload(body);
+
+    QCoapReply* reply = coapClient.post(req);
+    connect(reply, &QCoapReply::finished, this, &ZeroProxy::onSetConfigFinished);
+}
+    
+void ZeroProxy::onSetConfigFinished(QCoapReply *reply)
+{
+            
+    qDebug() << "SetConfig Responsecode: " << reply->responseCode();
+    if (reply->errorReceived() != QtCoap::Error::Ok)
+    {
+        qWarning() << "Error while trying to set trip curve";
+        return;
+    }
+    qDebug() << "Setting trip curve successful";
+}
+
 } // end namespace

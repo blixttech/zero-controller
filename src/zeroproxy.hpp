@@ -69,6 +69,7 @@ public:
     QwtPlotCurve* frequencySeries();
 
     std::vector<QPointF>* tripCurve();
+    void setTripCurve(std::vector<QPointF>& curve);
 
     OpenCloseTransition lastTransitionReason() const;
     QString lastTransitionReasonStr() const;
@@ -148,6 +149,7 @@ private slots:
 
     void onSwitchReplyFinished(QCoapReply *reply);
     void onGetConfigFinished(QCoapReply *reply);
+    void onSetConfigFinished(QCoapReply *reply);
         
     void processSmpGetStateOfImagesResp(std::shared_ptr<smp::GetStateOfImagesResp> reply);
 
