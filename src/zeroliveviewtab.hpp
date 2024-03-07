@@ -9,6 +9,7 @@
 #include "smp/smp.hpp"
 #include "zerodatastream.hpp"
 #include "zeroliveviewmodel.hpp"
+#include "zerotripconfwidget.hpp"
 
 namespace zero {
 
@@ -42,25 +43,9 @@ class ZeroLiveViewTab : public QWidget
         QwtPlotCurve* fCurve;
 
         int selectedRowIdx;
+        ZeroTripConfWidget*      zeroTrip;
 
         void replot();
-
-        QWidget*      zeroTrip;
-        QwtPlot*      tripPlot;
-        QwtPlotCurve  tCurve;
-        ZeroDataStream* tCurvePoints;
-        ZeroDataStream tCurvePointsOriginal;
-        
-
-        bool isTripCurveValid(QTableWidget* zeroTable);
-        void updateTripCurvePlot(QTableWidget* zeroTable);
-        void addTripPoint(QTableWidget* zeroTable, double currentInA = 0.0, int timeInMs = 0);
-
-
-        QWidget* createStandardTripCurveWiget(int trip_type, QwtPlotCurve* curve);
-        QWidget* createCustomTripCurveWidget(QwtPlotCurve* curve);
-    
-        QWidget* createTripSettingsWidget();        
          
 };
 

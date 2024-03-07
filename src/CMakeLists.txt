@@ -28,6 +28,7 @@ add_executable(zero-controller
     ${CMAKE_SOURCE_DIR}/resources/ui-style/ui-style.qrc
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
     zc_messages.proto
+    zerotripconfwidget.cpp
 )
 
 protobuf_generate(
