@@ -15,6 +15,13 @@ jobs:
 
         - name: Install Protoc
           uses: arduino/setup-protoc@v2
+
+        - name: Run vcpkg
+          uses: lukka/run-vcpkg@v11
+          with:
+                vcpkgArguments: 'protobuf'
+                vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+
         - name: Install Qt6
           shell: pwsh
           run: |

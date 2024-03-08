@@ -15,5 +15,20 @@ cmake --build build\qtcoap
 echo "Installating QtCOAP"
 cmake --install build\qtcoap
 
+
+$QWTSRC=$QTVERDIR + "\Src\qwt"
+$QWTVERSION="6.2.0"
+$QWTFILE="qwt-" + $(QWT_VERSION) + ".zip"
+$QWTDIR=$QWTSRC + "\qwt-" + $QWTVERSION
+mkdir $QWTSRC
+echo "Downloading Qwt"
+wget -O $QWTSRC https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
+unzip $QWTSRC\$QWTFILE
+copy $spath\config\qwtconfig.pri $QWTDIR
+cd $QWTDIR && qmake qwt.pro
+cd $QWTDIR && make
+cd $QWTDIR && make install
+
+
 echo "Setup Complete"
 
