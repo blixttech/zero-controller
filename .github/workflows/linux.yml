@@ -42,7 +42,8 @@ jobs:
             libxcb-render-util0 \
             libxcb-shape0 \
             protobuf-compiler \
-            libprotobuf-dev
+            libprotobuf-dev \
+            fuse
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
