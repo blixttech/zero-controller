@@ -17,9 +17,6 @@ jobs:
           # afterwards to generate the installer filename.
           fetch-depth: 0
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v2
-
       - name: Update environment
         shell: bash
         run: |
@@ -44,12 +41,13 @@ jobs:
             libxcb-randr0 \
             libxcb-render-util0 \
             libxcb-shape0 \
-            protobuf-compiler
+            protobuf-compiler \
+            libprotobuf-dev
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
 
-      - name: Install Qt and QtCoap
+      - name: Install Qt, QtCoap, and Qwt
         shell: bash
         run: make setup
           
