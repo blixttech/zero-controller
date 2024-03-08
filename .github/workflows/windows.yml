@@ -19,7 +19,7 @@ jobs:
         - name: Run vcpkg
           uses: lukka/run-vcpkg@v11
           with:
-                vcpkgArguments: 'protobuf'
+                runVcpkgInstall: 'protobuf'
                 vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
         - name: Install Qt6
