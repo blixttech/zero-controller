@@ -27,7 +27,7 @@ mkdir $QWTSRC
 echo "Downloading Qwt"
 $QWTOUT=$QWTSRC + "\" + $QWTFILE
 wget -O $QWTOUT https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
-unzip $QWTSRC + "\" + $QWTFILE
+unzip $QWTOUT
 copy $spath\config\qwtconfig.pri $QWTDIR
 cd $QWTDIR && qmake qwt.pro
 cd $QWTDIR && make
