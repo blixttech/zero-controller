@@ -37,8 +37,8 @@ copy $QWTCFG $QWTDIR
 $QMAKE=$Qt6_DIR + "\bin\qmake.exe"
 cd $QWTDIR
 & $QMAKE qwt.pro
-make
-make install
+nmake
+nmake install
 
 
 echo "Setup Complete"
