@@ -20,10 +20,11 @@ $QWTSRC=$QTVERDIR + "\Src\qwt"
 $QWTVERSION="6.2.0"
 $QWTFILE="qwt-" + $QWTVERSION + ".zip"
 $QWTDIR=$QWTSRC + "\qwt-" + $QWTVERSION
+echo "Creating " + $QWTSRC
 mkdir $QWTSRC
 echo "Downloading Qwt"
 wget -O $QWTSRC + "\" + $QWTFILE https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
-unzip $QWTSRC\$QWTFILE
+unzip $QWTSRC + "\" + "$QWTFILE
 copy $spath\config\qwtconfig.pri $QWTDIR
 cd $QWTDIR && qmake qwt.pro
 cd $QWTDIR && make
