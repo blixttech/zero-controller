@@ -35,9 +35,10 @@ dir $QWTSRC
 $QWTCFG=$spath + "\config\qwtconfig.pri"
 copy $QWTCFG $QWTDIR
 $QMAKE=$Qt6_DIR + "\bin\qmake.exe"
-cd $QWTDIR && $QMAKE qwt.pro
-cd $QWTDIR && make
-cd $QWTDIR && make install
+cd $QWTDIR
+$QMAKE qwt.pro
+make
+make install
 
 
 echo "Setup Complete"
