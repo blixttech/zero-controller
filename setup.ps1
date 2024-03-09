@@ -25,7 +25,8 @@ echo "Creating" + $QWTSRC
 mkdir $QWTSRC
 
 echo "Downloading Qwt"
-wget -O $QWTSRC + "\" + $QWTFILE https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
+$QWTOUT=$QWTSRC + "\" + $QWTFILE
+wget -O $QWTOUT https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
 unzip $QWTSRC + "\" + $QWTFILE
 copy $spath\config\qwtconfig.pri $QWTDIR
 cd $QWTDIR && qmake qwt.pro
