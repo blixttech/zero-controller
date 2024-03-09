@@ -13,15 +13,6 @@ jobs:
           with:
               python-version: '3.8'
 
-        - name: Install Protoc
-          uses: arduino/setup-protoc@v2
-
-        - name: Run vcpkg
-          uses: lukka/run-vcpkg@v11
-          with:
-                runVcpkgInstall: 'protobuf'
-                vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-
         - name: Install Qt6
           shell: pwsh
           run: |
@@ -30,7 +21,12 @@ jobs:
             echo "Qt6_DIR=$Qt6_DIR" >> $env:GITHUB_ENV
             echo "$Qt6_DIR/bin/" >> $env:GITHUB_PATH
             echo DONE
-      
+
+        - name: Install protobuf
+          shell: cmd
+          run: |
+            vcpkg install protobuf protobuf:x64-windows
+
         - name: Build
           shell: cmd
           run: |
