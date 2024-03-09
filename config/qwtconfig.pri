@@ -24,7 +24,7 @@ unix {
 }
 
 win32 {
-    QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION
+    # QWT_INSTALL_PREFIX    = C:/Qwt-$$QWT_VERSION
     # QWT_INSTALL_PREFIX = C:/Qwt-$$QWT_VERSION-qt-$$QT_VERSION
 }
 
