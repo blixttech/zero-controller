@@ -13,6 +13,10 @@ jobs:
           with:
               python-version: '3.8'
 
+        - name: Install stack and wget
+          run: |
+            choco install wget --no-progress
+
         - name: Install protobuf
           shell: cmd
           run: |

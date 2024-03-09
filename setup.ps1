@@ -22,7 +22,7 @@ $QWTFILE="qwt-" + $QWTVERSION + ".zip"
 $QWTDIR=$QWTSRC + "\qwt-" + $QWTVERSION
 mkdir $QWTSRC
 echo "Downloading Qwt"
-wget -O $QWTSRC https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
+wget -O $QWTSRC + "\" + $QWTFILE https://sourceforge.net/projects/qwt/files/qwt/$QWTVERSION/$QWTFILE
 unzip $QWTSRC\$QWTFILE
 copy $spath\config\qwtconfig.pri $QWTDIR
 cd $QWTDIR && qmake qwt.pro
