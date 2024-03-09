@@ -18,7 +18,7 @@ cmake --install build\qtcoap
 
 $QWTSRC=$QTVERDIR + "\Src\qwt"
 $QWTVERSION="6.2.0"
-$QWTFILE="qwt-" + $(QWT_VERSION) + ".zip"
+$QWTFILE="qwt-" + $QWTVERSION + ".zip"
 $QWTDIR=$QWTSRC + "\qwt-" + $QWTVERSION
 mkdir $QWTSRC
 echo "Downloading Qwt"
