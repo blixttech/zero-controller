@@ -3,7 +3,7 @@ set btype=%1
 
 set BDIR=build\zero-controller\%btype%
 
-cmake -G Ninja -B %BDIR% -S . -D CMAKE_BUILD_TYPE=%btype%
+cmake -G Ninja -B %BDIR% -S . -D CMAKE_BUILD_TYPE=%btype% -DCMAKE_TOOLCHAIN_FILE=%GITHUB_WORKSPACE%/scripts/buildsystems/vcpkg.cmake
 cmake --build %BDIR%
 cmake --install %BDIR% --prefix %~dp0\artifact\%btype%
 
