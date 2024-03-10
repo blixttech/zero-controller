@@ -1,5 +1,4 @@
 #include "zerocoapscanner.hpp"
-#include <netinet/in.h>
 #include "zc_messages.pb.h"
 #include "common.hpp"
 
