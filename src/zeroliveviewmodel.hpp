@@ -10,7 +10,8 @@ namespace zero {
         CurrentSeries = 0x0102,
         PowerSeries   = 0x0103,
         FrequencySeries = 0x0104,
-        TripCurve = 0x0105
+        TripCurve = 0x0105,
+        TripConfig = 0x0106
     };
 
 

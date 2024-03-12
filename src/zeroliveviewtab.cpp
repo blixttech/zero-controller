@@ -199,8 +199,8 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
                 if (fCurve) fCurve->detach();
                 fCurve = nullptr;
 
-                zeroTrip->setEnabled(false);
                 zeroTrip->clear();
+                zeroTrip->setEnabled(false);
 
             
                 if (selected.size() == 1)
@@ -228,8 +228,8 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
 
                     zeroTrip->setCurve(tVec);
 
-                    
-                    zeroTrip->setEnabled(true);
+                    bool has_trip = idx.model()->data(idx, zero::TripConfig).toBool();
+                    zeroTrip->setEnabled(has_trip);
                 }
                 replot();
                     

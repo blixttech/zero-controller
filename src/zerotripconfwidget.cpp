@@ -27,8 +27,10 @@ ZeroTripConfWidget::ZeroTripConfWidget(QWidget* parent) :
   tCurve(),
   customCurvePoints(new ZeroDataStream()),
   tCurvePointsOriginal(new ZeroDataStream()),
-  zeroTripTable( new QTableWidget(0,2))
+  zeroTripTable( new QTableWidget(0,2)),
+  tripTypeBox(new QComboBox)
 {
+  tripTypeBox->addItem(tr("Select..."));
   createTripSettingsWidget();		
 }
 
@@ -405,14 +407,12 @@ void ZeroTripConfWidget::createTripSettingsWidget()
 
     stackedWidget->addWidget(customCurveWidget);
 
-    QComboBox *tripTypeBox = new QComboBox;
-    tripTypeBox->addItem(tr("Select..."));
     tripTypeBox->addItem(tr("B"));
     tripTypeBox->addItem(tr("C"));
     tripTypeBox->addItem(tr("D"));
     tripTypeBox->addItem(tr("Custom"));
 
-    connect(tripTypeBox, &QComboBox::activated,
+    connect(tripTypeBox, &QComboBox::currentIndexChanged,
             [=](int idx)
             {
                 stackedWidget->setCurrentIndex(idx);
@@ -550,6 +550,9 @@ void ZeroTripConfWidget::clear()
 {
   zeroTripTable->clearContents();
   zeroTripTable->setRowCount(0);
+  tripTypeBox->setCurrentIndex(0);
+  tCurve.detach();
+  tripPlot->replot();
 }
   
 }

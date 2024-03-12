@@ -123,6 +123,8 @@ public:
     */
     std::optional<bool> didFirmwareUpdateSucceed();
 
+
+    bool hasTripCurveConf() { return new_protocol; }
 signals:
     void statusUpdated();
     void unsubscribed();

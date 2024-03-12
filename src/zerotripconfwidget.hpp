@@ -38,6 +38,7 @@ class ZeroTripConfWidget : public QWidget
       ZeroDataStream* tCurvePointsOriginal;
 
 			QTableWidget* zeroTripTable;
+	    QComboBox *tripTypeBox;
       
 
       bool isTripCurveValid(QTableWidget* zeroTable);

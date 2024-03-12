@@ -1,6 +1,7 @@
 #include "zeroliveviewmodel.hpp"
 #include <qpoint.h>
 #include <QBrush>
+#include "common.hpp"
 
 namespace zero {
 
@@ -147,6 +148,8 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
             return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->frequencySeries()));
         case zero::TripCurve:
             return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->tripCurve()));
+        case zero::TripConfig:
+            return QVariant::fromValue(zList->zeros()[row]->hasTripCurveConf());
     }
     return QVariant();
 }
