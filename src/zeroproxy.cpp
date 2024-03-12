@@ -634,6 +634,12 @@ void ZeroProxy::onStatusUpdate(QCoapReply *reply, const QCoapMessage &message)
 
         cRms_ = QString::fromUtf8(values[5]).toUInt();
         vRms_ = QString::fromUtf8(values[7]).toUInt();
+            
+        auto fcRms = cRms_ / 1000.0;
+        auto fvRms = vRms_ / 1000.0;
+        cSeries_.append(QPointF(uptime_, fcRms ));
+        vSeries_.append(QPointF(uptime_, fvRms ));
+        pSeries_.append(QPointF(uptime_, fcRms * fvRms));
 
         powerInTemp_ = QString::fromUtf8(values[8]).toUInt();
         powerOutTemp_ = QString::fromUtf8(values[9]).toUInt();
