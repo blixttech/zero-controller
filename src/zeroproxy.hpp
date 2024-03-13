@@ -127,6 +127,7 @@ public:
     bool hasTripCurveConf() { return new_protocol; }
 signals:
     void statusUpdated();
+    void configUpdated();
     void unsubscribed();
     void stopped();
 

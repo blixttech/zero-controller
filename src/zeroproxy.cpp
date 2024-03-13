@@ -167,13 +167,17 @@ void ZeroProxy::onGetConfigFinished(QCoapReply *reply)
 
     auto curve = msg.res().config().curve();
     auto psize = curve.points_size();
+        
+    // in case of reload
+    tripCurve_.clear();
     for (int i = 0; i < psize; ++i)
     {
         auto p = curve.points(i);
         tripCurve_.push_back(QPointF(p.limit(), p.duration()));
     }
 
-    emit receivedConfig();    
+    emit receivedConfig();   
+    emit configUpdated(); 
 }
 
 void ZeroProxy::pullStatusUpdate()
@@ -860,6 +864,9 @@ void ZeroProxy::onSetConfigFinished(QCoapReply *reply)
         return;
     }
     qDebug() << "Setting trip curve successful";
+
+    // Request trip curve reload
+    getConfig();
 }
 
 } // end namespace

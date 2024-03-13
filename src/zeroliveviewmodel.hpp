@@ -33,6 +33,7 @@ namespace zero {
             void zeroAdded(int newRow); 
 
             void zeroUpdated(int updatedRow); 
+            void zeroConfigUpdated(int updatedRow); 
 
             void beforeErasingZero(int removedRow); 
             void zeroErased(int removedRow); 

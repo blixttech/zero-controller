@@ -259,6 +259,32 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
                 
             }
         );
+
+    // update the trip curve
+    connect(model, &QAbstractItemModel::dataChanged,
+            [=](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles = QList<int>())
+            {
+                bool display_update = false;
+                for (auto i = roles.constBegin(); i != roles.constEnd(); ++i)
+                {
+                    if (*i == zero::TripConfig)
+                    {
+                        display_update = true;
+                        break;
+                    }
+                }
+                
+                if (!display_update) return;
+
+                // check the selected row is part of the update
+                if (!(selectedRowIdx >= topLeft.row() &&
+                    selectedRowIdx <= bottomRight.row())) return;
+
+                                
+                std::vector<QPointF> tVec(*(static_cast<std::vector<QPointF>*>(topLeft.model()->data(topLeft, zero::TripCurve).value<void*>())));
+                zeroTrip->setCurve(tVec);
+            }
+        );
 }
 
 void ZeroLiveViewTab::replot()

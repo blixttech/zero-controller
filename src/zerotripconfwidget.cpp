@@ -12,7 +12,8 @@
 #include <QTimeEdit>
 #include <QVBoxLayout>
 
-
+// QWT Items
+#include <QwtLegend>
 #include <QwtText>
 
 #include "zerodatastream.hpp"
@@ -31,6 +32,7 @@ ZeroTripConfWidget::ZeroTripConfWidget(QWidget* parent) :
   tripTypeBox(new QComboBox)
 {
   tripTypeBox->addItem(tr("Select..."));
+  tCurve.setTitle("Current");
   createTripSettingsWidget();		
 }
 
@@ -59,7 +61,7 @@ QWidget* ZeroTripConfWidget::createStandardTripCurveWiget(int trip_type, QwtPlot
         
     ZeroDataStream* curve_data = new ZeroDataStream;
     QTableWidget* tTable = new QTableWidget(0,3);
-    tTable->setHorizontalHeaderLabels(QStringList() << tr("xI <sub>n</sub>") << tr("I(A)") << tr("Time"));
+    tTable->setHorizontalHeaderLabels(QStringList() << tr("xIₙ") << tr("I(A)") << tr("Time"));
 
     auto calc_trip = [=]()
     {
@@ -384,6 +386,11 @@ void ZeroTripConfWidget::createTripSettingsWidget()
 //    plot->setAxisScale( QwtAxis::XBottom, 0, 60 );
 //    plot->setAxisLabelRotation( QwtAxis::XBottom, -50.0 );
 //    plot->setAxisLabelAlignment( QwtAxis::XBottom, Qt::AlignLeft | Qt::AlignBottom );
+
+
+    QwtLegend *legend = new QwtLegend;
+    //legend->setItemMode( QwtLegend::CheckableItem );
+    tripPlot->insertLegend( legend, QwtPlot::RightLegend );
     
     QStackedWidget *stackedWidget = new QStackedWidget;
     std::vector<QwtPlotCurve*> trip_curves;
@@ -394,6 +401,7 @@ void ZeroTripConfWidget::createTripSettingsWidget()
         QwtPlotCurve* tr_curve = new QwtPlotCurve;
         tr_curve->setPen( QColorConstants::Svg::darkorange);
         tr_curve->setStyle(QwtPlotCurve::CurveStyle::Steps);
+        tr_curve->setTitle("New");
         trip_curves.push_back(tr_curve);
         QWidget *bCurveWidget = createStandardTripCurveWiget(i, tr_curve);
         stackedWidget->addWidget(bCurveWidget);
@@ -402,6 +410,7 @@ void ZeroTripConfWidget::createTripSettingsWidget()
     QwtPlotCurve* tr_curve = new QwtPlotCurve;
     tr_curve->setPen( QColorConstants::Svg::darkorange);
     tr_curve->setStyle(QwtPlotCurve::CurveStyle::Steps);
+    tr_curve->setTitle("New");
     trip_curves.push_back(tr_curve); 
     QWidget *customCurveWidget = createCustomTripCurveWidget(tr_curve);
 

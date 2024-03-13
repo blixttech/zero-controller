@@ -28,6 +28,8 @@ ZeroLiveViewModel::ZeroLiveViewModel(std::shared_ptr<ZeroList> zList, QObject *p
             this, &ZeroLiveViewModel::zeroAdded);
     connect(zList.get(), &ZeroList::zeroUpdated,
             this, &ZeroLiveViewModel::zeroUpdated);
+    connect(zList.get(), &ZeroList::zeroConfigUpdated,
+            this, &ZeroLiveViewModel::zeroConfigUpdated);
     connect(zList.get(), &ZeroList::beforeErasingZero,
             this, &ZeroLiveViewModel::beforeErasingZero);
     connect(zList.get(), &ZeroList::zeroErased,
@@ -213,6 +215,14 @@ void ZeroLiveViewModel::zeroUpdated(int updatedRow)
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }
 
+void ZeroLiveViewModel::zeroConfigUpdated(int updatedRow)
+{
+    auto topLeft = createIndex(updatedRow, 0);
+    auto bottomRight = createIndex(updatedRow, columnCount()-1);
+
+    emit dataChanged(topLeft, bottomRight, {zero::TripConfig}); 
+}
+    
 void ZeroLiveViewModel::beforeErasingZero(int removedRow)
 {
     beginRemoveRows(QModelIndex(), removedRow, removedRow);

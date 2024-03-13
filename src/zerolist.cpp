@@ -53,6 +53,13 @@ void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
             }
     );
 
+    connect(zero.get(), &ZeroProxy::configUpdated,
+            [=]() 
+            {
+                notifyOfZeroConfigUpdate(zero->uuid());
+            }
+    );
+        
     connect(zero.get(), &ZeroProxy::stopped,
             [=]() 
             {
@@ -73,6 +80,14 @@ void ZeroList::notifyOfZeroUpdate(const QString& uuid)
 
     auto index = zeros_.at(uuid);
     emit zeroUpdated(index);
+}
+    
+void ZeroList::notifyOfZeroConfigUpdate(const QString& uuid)
+{
+    if (zeros_.count(uuid) == 0) return;
+
+    auto index = zeros_.at(uuid);
+    emit zeroConfigUpdated(index);
 }
 
 void ZeroList::clear()
