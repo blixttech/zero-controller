@@ -114,17 +114,17 @@ QWidget* ZeroTripConfWidget::createStandardTripCurveWiget(int trip_type, QwtPlot
             // B
             {
                 {3.0,    200 },  //200 mill         
-                {3.1,      0 }
+                {3.1,    100 }
             },
             // c
             {
                 {5.0,    200 },  //200 mill         
-                {5.1,      0 }
+                {5.1,    100 }
             },
             //D
             {
                 {10.0,    200 },  //200 mill         
-                {10.1,      0 }
+                {10.1,    100 }
             },
         };
 
@@ -506,9 +506,17 @@ bool ZeroTripConfWidget::isTripCurveValid(QTableWidget* zeroTripTable)
         double current = zeroTripTable->item(logRow, 0)->data(Qt::DisplayRole).toDouble();
         int timeMs = static_cast<QTimeEdit*>(zeroTripTable->cellWidget(logRow, 1))->time().msecsSinceStartOfDay();
 
+        if (current == 0.0)
+        {
+            status << "Current must not be 0 in row " << i+1;
+            qWarning() << msg;
+            emit sendStatusMessage(msg);
+            return false;        
+        }
+
         if (prevCur > current)
         {
-            status << "Current is descending but should be ascending in row " << i;
+            status << "Current is descending but should be ascending in row " << i+1;
             qWarning() << msg;
             emit sendStatusMessage(msg);
             return false;        
@@ -517,7 +525,7 @@ bool ZeroTripConfWidget::isTripCurveValid(QTableWidget* zeroTripTable)
 
         if (prevMs < timeMs)
         {
-            status << "Time is ascending but should be descending in row " << i;
+            status << "Time is ascending but should be descending in row " << i+1;
             qWarning() << msg;
             emit sendStatusMessage(msg);
             return false;        
