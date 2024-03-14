@@ -175,6 +175,9 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
 {
     zeroTable->setModel(model);
 
+    connect(model, &ZeroLiveViewModel::sendStatusMessage,
+            this, &ZeroLiveViewTab::sendStatusMessage);
+
     connect(model, &ZeroLiveViewModel::rowsInserted, 
             [=](const QModelIndex &parent, int first, int last)
             {

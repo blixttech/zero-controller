@@ -539,6 +539,8 @@ void ZeroTripConfWidget::updateTripCurvePlot(QTableWidget* zeroTripTable)
 
 void ZeroTripConfWidget::setCurve(std::vector<QPointF>& curve)
 {
+    zeroTripTable->setRowCount(0);
+    zeroTripTable->clearContents();
     tCurve.detach();
     customCurvePoints->clear();
     tCurvePointsOriginal->clear();
