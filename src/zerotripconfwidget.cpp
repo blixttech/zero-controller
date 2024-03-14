@@ -1,4 +1,5 @@
 #include <qabstractitemmodel.h>
+#include <qdatetimeedit.h>
 #include <qwt_plot_curve.h>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -473,6 +474,13 @@ void ZeroTripConfWidget::addTripPoint(QTableWidget* zeroTripTable, double curren
 
     QTimeEdit* tEdit = new QTimeEdit( QTime::fromMSecsSinceStartOfDay(timeInMs) );
     tEdit->setDisplayFormat("hh:mm:ss.zzz");
+
+    connect(tEdit, &QDateTimeEdit::timeChanged,
+            [=](QTime time)
+            {
+                zeroTripTable->cellChanged(0,0 );    
+            }
+    );
 
     zeroTripTable->setItem(row, 0, current);
     zeroTripTable->setCellWidget(row, 1, tEdit);
