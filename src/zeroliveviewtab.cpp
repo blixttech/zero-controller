@@ -122,6 +122,8 @@ ZeroLiveViewTab::ZeroLiveViewTab(QWidget* parent) : QWidget(parent),
 
 
     zeroTrip->setEnabled(false);
+    connect(zeroTrip,&ZeroTripConfWidget::sendStatusMessage,
+            this, &ZeroLiveViewTab::sendStatusMessage);
 
     connect(zeroTrip, &ZeroTripConfWidget::applyNewTripCurve,
         [=](std::vector<QPointF> newTripCurve)

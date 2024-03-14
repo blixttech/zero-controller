@@ -147,6 +147,7 @@ signals:
     void subscriptionRefused();
     void shutdownRequested();
 
+	  void sendStatusMessage( const QString & message ); 
 private slots:
     void onStatusUpdate(QCoapReply *reply, const QCoapMessage &message);
 

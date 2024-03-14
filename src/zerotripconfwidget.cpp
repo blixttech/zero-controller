@@ -182,6 +182,7 @@ QWidget* ZeroTripConfWidget::createStandardTripCurveWiget(int trip_type, QwtPlot
                 newTripCurve.push_back(QPointF(current, timeMs));
             }
 
+            emit sendStatusMessage("Sending trip curve to Zero");
             emit applyNewTripCurve(newTripCurve);
         }
     );
@@ -515,6 +516,7 @@ bool ZeroTripConfWidget::isTripCurveValid(QTableWidget* zeroTripTable)
         }
         prevMs = timeMs;
     }
+    emit sendStatusMessage("Trip curve is valid");
     return true;
 }
 

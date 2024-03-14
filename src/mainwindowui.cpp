@@ -1,5 +1,6 @@
 #include "mainwindowui.hpp"
 #include "qmainwindow.h"
+#include "zeroliveviewtab.hpp"
 #include <QToolBar>
 #include <QIcon>
 #include <QStatusBar>
@@ -44,6 +45,13 @@ void MainWindowUI::setupMainTabs(QMainWindow* mainWindow)
     mgmtView = new ZeroManagementViewTab(mainTabs);
     mainTabs->addTab(liveView, tr("Live"));
     mainTabs->addTab(mgmtView, tr("Admin"));
+
+    connect(liveView, &ZeroLiveViewTab::sendStatusMessage,
+        [=](const QString& message)
+        {
+            mainWindow->statusBar()->showMessage(message);          
+        }
+    );
 }
 
 void MainWindowUI::setupToolBar(QMainWindow* mainWindow)

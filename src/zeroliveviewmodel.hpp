@@ -27,6 +27,9 @@ namespace zero {
             QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
             bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
+
+        signals:
+            void sendStatusMessage( const QString & message ); 
        
         private slots:
             void beforeAddingZero(int newRow); 

@@ -34,6 +34,9 @@ ZeroLiveViewModel::ZeroLiveViewModel(std::shared_ptr<ZeroList> zList, QObject *p
             this, &ZeroLiveViewModel::beforeErasingZero);
     connect(zList.get(), &ZeroList::zeroErased,
             this, &ZeroLiveViewModel::zeroErased);
+
+    connect(zList.get(), &ZeroList::sendStatusMessage,
+            this, &ZeroLiveViewModel::sendStatusMessage);
 }
 
 int ZeroLiveViewModel::rowCount(const QModelIndex &parent) const

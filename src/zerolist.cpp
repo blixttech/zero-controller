@@ -67,6 +67,9 @@ void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
                 erase(zero->uuid());
             }
     );
+
+    connect(zero.get(), &ZeroProxy::sendStatusMessage,
+            this, &ZeroList::sendStatusMessage);
 }
 
 const ZeroVec& ZeroList::zeros() const

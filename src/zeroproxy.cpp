@@ -861,9 +861,12 @@ void ZeroProxy::onSetConfigFinished(QCoapReply *reply)
     if (reply->errorReceived() != QtCoap::Error::Ok)
     {
         qWarning() << "Error while trying to set trip curve";
+        emit sendStatusMessage("Setting Trip Curve Failed");
         return;
     }
     qDebug() << "Setting trip curve successful";
+
+    emit sendStatusMessage("Successful update of trip curve");
 
     // Request trip curve reload
     getConfig();

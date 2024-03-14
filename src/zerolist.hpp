@@ -37,7 +37,8 @@ signals:
 
     void beforeErasingZero(int index);
     void zeroErased(int index);
-   
+       
+    void sendStatusMessage( const QString & message ); 
 
 private:
     Q_DISABLE_COPY(ZeroList);
