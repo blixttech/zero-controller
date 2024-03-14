@@ -1,5 +1,7 @@
 #include "zeroliveviewmodel.hpp"
+#include <qpoint.h>
 #include <QBrush>
+#include "common.hpp"
 
 namespace zero {
 
@@ -26,10 +28,15 @@ ZeroLiveViewModel::ZeroLiveViewModel(std::shared_ptr<ZeroList> zList, QObject *p
             this, &ZeroLiveViewModel::zeroAdded);
     connect(zList.get(), &ZeroList::zeroUpdated,
             this, &ZeroLiveViewModel::zeroUpdated);
+    connect(zList.get(), &ZeroList::zeroConfigUpdated,
+            this, &ZeroLiveViewModel::zeroConfigUpdated);
     connect(zList.get(), &ZeroList::beforeErasingZero,
             this, &ZeroLiveViewModel::beforeErasingZero);
     connect(zList.get(), &ZeroList::zeroErased,
             this, &ZeroLiveViewModel::zeroErased);
+
+    connect(zList.get(), &ZeroList::sendStatusMessage,
+            this, &ZeroLiveViewModel::sendStatusMessage);
 }
 
 int ZeroLiveViewModel::rowCount(const QModelIndex &parent) const
@@ -135,24 +142,47 @@ QVariant ZeroLiveViewModel::data(const QModelIndex &index, int role) const
                 return Qt::Unchecked;*/
             break;
         case Qt::UserRole:
-            return zList->zeros()[row]->isStale(); 
+            return zList->zeros()[row]->isStale();
+        case zero::VoltageSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->voltageSeries()));
+        case zero::CurrentSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->currentSeries()));
+        case zero::PowerSeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->powerSeries()));
+        case zero::FrequencySeries:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->frequencySeries()));
+        case zero::TripCurve:
+            return QVariant::fromValue(static_cast<void*>(zList->zeros()[row]->tripCurve()));
+        case zero::TripConfig:
+            return QVariant::fromValue(zList->zeros()[row]->hasTripCurveConf());
     }
     return QVariant();
 }
 
 bool ZeroLiveViewModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (Qt::EditRole != role) return false;
+    switch (role) {
+        case Qt::EditRole:
+        { 
+            int row = index.row();
+            int col = index.column();
 
-    int row = index.row();
-    int col = index.column();
+            if (1 != col) return false;
 
-    if (1 != col) return false;
-
-    zList->zeros()[row]->toggle();
-    emit dataChanged(index, index, {role}); 
-        
-    return true;
+            zList->zeros()[row]->toggle();
+            emit dataChanged(index, index, {role}); 
+    
+            return true;
+        }
+        case zero::TripCurve:
+        {
+            std::vector<QPointF>* curve = static_cast<std::vector<QPointF>*>(value.value<void*>());
+            int row = index.row();
+            zList->zeros()[row]->setTripCurve(*curve);
+            return true;                
+        }
+    }
+    return false;
 }
 
 QVariant ZeroLiveViewModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -188,6 +218,14 @@ void ZeroLiveViewModel::zeroUpdated(int updatedRow)
     emit dataChanged(topLeft, bottomRight, {Qt::DisplayRole}); 
 }
 
+void ZeroLiveViewModel::zeroConfigUpdated(int updatedRow)
+{
+    auto topLeft = createIndex(updatedRow, 0);
+    auto bottomRight = createIndex(updatedRow, columnCount()-1);
+
+    emit dataChanged(topLeft, bottomRight, {zero::TripConfig}); 
+}
+    
 void ZeroLiveViewModel::beforeErasingZero(int removedRow)
 {
     beginRemoveRows(QModelIndex(), removedRow, removedRow);

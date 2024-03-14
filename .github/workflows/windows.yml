@@ -13,6 +13,15 @@ jobs:
           with:
               python-version: '3.8'
 
+        - name: Install stack and wget
+          run: |
+            choco install wget --no-progress
+
+        - name: Install protobuf
+          shell: cmd
+          run: |
+            vcpkg install protobuf protobuf:x64-windows
+          
         - name: Install Qt6
           shell: pwsh
           run: |
@@ -21,7 +30,7 @@ jobs:
             echo "Qt6_DIR=$Qt6_DIR" >> $env:GITHUB_ENV
             echo "$Qt6_DIR/bin/" >> $env:GITHUB_PATH
             echo DONE
-      
+
         - name: Build
           shell: cmd
           run: |

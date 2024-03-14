@@ -23,6 +23,7 @@ class NetworkInterfaceList : public QAbstractListModel
     
 
     private:
+        QNetworkAddressEntry findValidIPv4Address( QList<QNetworkAddressEntry> & addresses) const;
          QList<QNetworkInterface> interfaces;
 };
 

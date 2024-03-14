@@ -1,4 +1,16 @@
 #include "zerocoapscanner.hpp"
+#include "zc_messages.pb.h"
+#include "common.hpp"
+
+#include <sstream>
+#include <iomanip>
+
+#ifdef USE_WINSOCK2
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 
 namespace zero {
 
@@ -61,10 +73,11 @@ void ZeroCoapScanner::onVersionReply(QCoapReply *reply)
 
     QString uuid, hwversion, macaddress;
     QUrl url;
-    if (!parseVersion(reply, url, uuid, hwversion, macaddress))
+    bool new_protocol = false;
+    if (!parseVersion(reply, url, uuid, hwversion, macaddress, new_protocol))
         return;
 
-    emit newZeroDetected(uuid, url, hwversion, macaddress); 
+    emit newZeroDetected(uuid, url, hwversion, macaddress, new_protocol); 
 }
 
 void ZeroCoapScanner::onVersionError(QCoapReply *reply, QtCoap::Error error)
@@ -73,7 +86,7 @@ void ZeroCoapScanner::onVersionError(QCoapReply *reply, QtCoap::Error error)
 }
 
 bool ZeroCoapScanner::parseVersion(QCoapReply *reply, QUrl& url, QString& uuid, 
-                                    QString& hwversion, QString macaddress)
+                                    QString& hwversion, QString& macaddress, bool& new_protocol)
 {
     if (!reply->isSuccessful()) {
         return false;
@@ -81,27 +94,66 @@ bool ZeroCoapScanner::parseVersion(QCoapReply *reply, QUrl& url, QString& uuid,
 
     const QCoapMessage &message = reply->message();
     QCoapOption format = message.option(QCoapOption::OptionName::ContentFormat);
-    if(!format.isValid() || format.uintValue() != 0) {
-        qDebug() << "Invalid content format";
+    if(!format.isValid() || !(format.uintValue() == 0 || ntohs(format.uintValue()) == NANOPB_CONTENT_FORMAT))
+    {
+        qDebug() << "Invalid content format " << ntohs(format.uintValue());
         return false;
     }
 
-    const QList<QByteArray> values = message.payload().split(',');
-    if (values.length() < 5) {
-        qDebug() << "Invalid version format";
-        return false;
+    if (ntohs(format.uintValue()) == NANOPB_CONTENT_FORMAT)
+    {
+        new_protocol = true;        
     }
-
+    else
+    {
+        new_protocol = false;
+    }
+    
     url.setScheme("coap");
     url.setHost(reply->url().host());
     url.setPort(reply->url().port());
 
-    uuid = QString::fromUtf8(values[0]);
-    macaddress = QString::fromUtf8(values[1]);
 
-    hwversion = QString::fromUtf8(values[2]) + "." + 
-                QString::fromUtf8(values[3]) + "." + 
-                QString::fromUtf8(values[4]);
+    if (!new_protocol) {            
+        const QList<QByteArray> values = message.payload().split(',');
+        if (values.length() < 5) {
+            qDebug() << "Invalid version format '" << message.payload() << "'";
+            return false;
+        }
+
+
+        uuid = QString::fromUtf8(values[0]);
+        macaddress = QString::fromUtf8(values[1]);
+
+        hwversion = QString::fromUtf8(values[2]) + "." + 
+                    QString::fromUtf8(values[3]) + "." + 
+                    QString::fromUtf8(values[4]);
+    }
+    else {
+        ZCMessage msg;
+        if (!msg.ParseFromArray(message.payload().constData(), message.payload().size())) {
+            qDebug() << "Invalid protobuf format in version message";
+            return false;
+        }
+
+        if (!(msg.has_res() && msg.res().has_version())) {
+            qDebug() << "Invalid version message";
+            return false;
+        }
+
+        auto version = msg.res().version();
+
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (int i = 0; i < version.uuid().size(); ++i)
+        {
+            ss << std::setw(2) << static_cast<unsigned>(version.uuid().data()[i]);
+        }
+        uuid = QString::fromStdString(ss.str());
+            
+        macaddress = "N/A";
+        hwversion = "N/A";
+    }
     
     return true;
 }

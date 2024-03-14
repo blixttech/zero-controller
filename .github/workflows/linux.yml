@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
         DEBIAN_FRONTEND: "noninteractive"
@@ -16,7 +16,6 @@ jobs:
           # history and especially tags, since we use git describe
           # afterwards to generate the installer filename.
           fetch-depth: 0
-
 
       - name: Update environment
         shell: bash
@@ -41,12 +40,15 @@ jobs:
             libxcb-keysyms1 \
             libxcb-randr0 \
             libxcb-render-util0 \
-            libxcb-shape0
+            libxcb-shape0 \
+            protobuf-compiler \
+            libprotobuf-dev \
+            fuse
 
           pip3 install wheel setuptools
           pip3 install mako aqtinstall
 
-      - name: Install Qt and QtCoap
+      - name: Install Qt, QtCoap, and Qwt
         shell: bash
         run: make setup
           

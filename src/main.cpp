@@ -12,6 +12,8 @@
 #include "common.hpp"
 #include "mainwindow.hpp"
 
+#include "zc_messages.pb.h"
+
 namespace zero {
 
 void processCmdArgs(zero::Config& config)
@@ -102,6 +104,8 @@ void applyStyles(QApplication& app)
 
 int main(int argc, char *argv[])
 {
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
+    
     QApplication app(argc, argv);
 
     qSetMessagePattern("%{time dd.MM.yy hh:mm:ss.zzz} %{type} %{file}:%{line} %{message}");

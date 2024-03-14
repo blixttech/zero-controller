@@ -9,6 +9,7 @@ namespace zero {
 
     typedef QMap<QString, QVariant> Config;
 
+    const uint NANOPB_CONTENT_FORMAT = 30001;
 }
 
 
@@ -27,4 +28,5 @@ namespace zero {
 
 #define CONF_KEY_UPDATE_INT                 "update/interval"
 #define CONF_DEF_UPDATE_INT                 100
+
 

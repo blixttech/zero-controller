@@ -33,10 +33,12 @@ signals:
     void zeroAdded(int index);
     
     void zeroUpdated(int index);
+    void zeroConfigUpdated(int index);
 
     void beforeErasingZero(int index);
     void zeroErased(int index);
-   
+       
+    void sendStatusMessage( const QString & message ); 
 
 private:
     Q_DISABLE_COPY(ZeroList);
@@ -45,6 +47,7 @@ private:
     ZeroVec zerosVec_;
 
     void notifyOfZeroUpdate(const QString& uuid);
+    void notifyOfZeroConfigUpdate(const QString& uuid);
 };
 
 } // end namespace
