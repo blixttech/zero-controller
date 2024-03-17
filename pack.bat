@@ -1,4 +1,7 @@
 @echo off
+cd C:\vcpkg
+tree /f /a 
+
 cd %~dp0\artifact\Release\bin
 
 windeployqt zero-controller.exe --release --compiler-runtime
