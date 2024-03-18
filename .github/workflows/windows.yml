@@ -21,6 +21,7 @@ jobs:
           shell: cmd
           run: |
             vcpkg install protobuf protobuf:x64-windows
+            tree c:\vcpk /f /a
           
         - name: Install Qt6
           shell: pwsh
