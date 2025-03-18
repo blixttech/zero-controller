@@ -90,5 +90,5 @@ clean:
 	rm -rf $(BUILD_BASE_DIR) $(PACKAGE_BASE_DIR)
 
 full_clean: clean
-	rm -rf $(QT_BASE_DIR) $(TOOLS_DIR)
+	rm -rf $(QT_BASE_DIR) $(TOOLS_DIR) $(EXT_LIB_BASE)
 	
