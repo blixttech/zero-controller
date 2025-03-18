@@ -21,6 +21,13 @@ enum ZCDeviceState {
 	ZC_DEVICE_STATE_TRANSIENT = 4; /* Device is in transient state. */
 }
 
+/* The initial state of the trip curve. */
+enum ZCSDeviceIniState {
+	ZC_DEVICE_INI_STATE_OPENED   = 0; /* Device opened */
+	ZC_DEVICE_INI_STATE_CLOSED   = 1; /* Device closed */
+	ZC_DEVICE_INI_STATE_PREVIOUS = 2; /* Device's previous state */
+}
+
 /* The event caused the device to trip. */
 enum ZCTripCause {
 	ZC_TRIP_CAUSE_NONE	  = 0;
@@ -99,8 +106,13 @@ message ZCStatus {
 
 /* A point on the trip curve. */
 message ZCCurvePoint {
-	uint32 limit	= 1; /* Current limit in milliamperes. */
+	uint32 limit	= 1; /* Current limit in amperes. */
 	uint32 duration = 2; /* Duration to be spent in milliseconds. */
+}
+
+/* The initial state configuration. */
+message ZCIniStateConfig {
+	ZCSDeviceIniState state = 1; /* Initial trip curve state. */
 }
 
 /* Modulation control configuration. */
@@ -168,6 +180,7 @@ message ZCConfig {
 		ZCOufpConfig oufp    = 5; /* Over/under frequency protection. */
 		ZCNotifConfig notif  = 6; /* Notification. */
 		ZCCalibConfig calib  = 7; /* Calibration. */
+		ZCIniStateConfig ini = 8; /* Initial stste configuration. */
 	}
 }
 
@@ -226,6 +239,11 @@ message ZCRequestGetConfigCalib {
 	ZCCalibType type = 1;
 }
 
+/* Get initial configuration request. */
+message ZCRequestGetConfigIni {
+	uint32 null = 1;
+}
+
 /* Get configuration. */
 message ZCRequestGetConfig {
 	oneof config {
@@ -236,6 +254,7 @@ message ZCRequestGetConfig {
 		ZCRequestGetConfigOufp oufp    = 5; /* Over/under frequency protection. */
 		ZCRequestGetConfigNotif notif  = 6; /* Notification. */
 		ZCRequestGetConfigCalib calib  = 7; /* Calibration. */
+		ZCRequestGetConfigIni ini      = 8; /* Initial configuration. */
 	}
 }
 

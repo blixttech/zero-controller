@@ -8,6 +8,7 @@ ZCCalibConfig.arg		max_size:8
 ZCApiVersion			long_names:false
 ZCSwitchState			long_names:false
 ZCDeviceState			long_names:false
+ZCSDeviceIniState		long_names:false
 ZCTripCause			long_names:false
 ZCFlowDirection			long_names:false
 ZCDeviceCmd			long_names:false
