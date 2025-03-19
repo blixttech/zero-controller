@@ -1,7 +1,6 @@
 #include "zeroliveviewtab.hpp"
-#include "openclosebuttondelegate.hpp"
-#include "zerodatastream.hpp"
-#include "zeroliveviewmodel.hpp"
+
+#include <qnamespace.h>
 
 #include <QAbstractButton>
 #include <QAbstractItemModel>
@@ -13,8 +12,8 @@
 #include <QDoubleSpinBox>
 #include <QGridLayout>
 #include <QGroupBox>
-#include <QHeaderView>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QPoint>
@@ -23,32 +22,26 @@
 #include <QTime>
 #include <QVBoxLayout>
 #include <QWidget>
-
-
-#include <qnamespace.h>
-
-#include <limits>
-
-#include <QwtPlotCurve>
-#include <QwtText>
-#include <QwtScaleWidget>
-#include <QwtScaleDraw>
 #include <QwtAxis>
+#include <QwtPlotCurve>
+#include <QwtScaleDraw>
+#include <QwtScaleWidget>
+#include <QwtText>
 
-
-#include "zerotripconfwidget.hpp"
+#include "openclosebuttondelegate.hpp"
 #include "timescaledraw.hpp"
+#include "zeroliveviewmodel.hpp"
+#include "zerotripconfwidget.hpp"
 
 namespace zero {
 
-
-void configureTimeAxis(QwtPlot* plot)
-{     
+void configureTimeAxis(QwtPlot *plot)
+{
     // plot->setAxisTitle( QwtAxis::XBottom, " System Uptime [h:m:s]" );
-    plot->setAxisScaleDraw( QwtAxis::XBottom, new TimeScaleDraw( QTime(0, 0)));
-//    plot->setAxisScale( QwtAxis::XBottom, 0, 60 );
-    plot->setAxisLabelRotation( QwtAxis::XBottom, -50.0 );
-    plot->setAxisLabelAlignment( QwtAxis::XBottom, Qt::AlignLeft | Qt::AlignBottom );
+    plot->setAxisScaleDraw(QwtAxis::XBottom, new TimeScaleDraw(QTime(0, 0)));
+    //    plot->setAxisScale( QwtAxis::XBottom, 0, 60 );
+    plot->setAxisLabelRotation(QwtAxis::XBottom, -50.0);
+    plot->setAxisLabelAlignment(QwtAxis::XBottom, Qt::AlignLeft | Qt::AlignBottom);
 
     /*
        In situations, when there is a label at the most right position of the
@@ -59,57 +52,57 @@ void configureTimeAxis(QwtPlot* plot)
        is enough space for the overlapping label below the left scale.
      */
 
-    QwtScaleWidget* scaleWidget = plot->axisWidget( QwtAxis::XBottom );
-    const int fmh = QFontMetrics( scaleWidget->font() ).height();
-    scaleWidget->setMinBorderDist( 0, fmh / 2 );
+    QwtScaleWidget *scaleWidget = plot->axisWidget(QwtAxis::XBottom);
+    const int fmh = QFontMetrics(scaleWidget->font()).height();
+    scaleWidget->setMinBorderDist(0, fmh / 2);
 }
 
-ZeroLiveViewTab::ZeroLiveViewTab(QWidget* parent) : QWidget(parent),
-    zeroTable(new QTableView(this)),
-    zeroDetails(new QTabWidget(this)),
-    zeroPlots(new QWidget(zeroDetails)),
-    selectedRowIdx(-1),
-    zeroTrip(new ZeroTripConfWidget)
+ZeroLiveViewTab::ZeroLiveViewTab(QWidget *parent)
+    : QWidget(parent),
+      zeroTable(new QTableView(this)),
+      zeroDetails(new QTabWidget(this)),
+      zeroPlots(new QWidget(zeroDetails)),
+      selectedRowIdx(-1),
+      zeroTrip(new ZeroTripConfWidget)
 {
     zeroTable->setObjectName(QString::fromUtf8("zeroTable"));
     zeroTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     zeroTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    //zeroTable->setEditTriggers(QTableView::AllEditTriggers);
-//    zeroTable->setEditTriggers(QTableView::DoubleClicked);
-    zeroTable->setItemDelegateForColumn(1,new OpenCloseButtonDelegate(zeroTable));
+    // zeroTable->setEditTriggers(QTableView::AllEditTriggers);
+    //    zeroTable->setEditTriggers(QTableView::DoubleClicked);
+    zeroTable->setItemDelegateForColumn(1, new OpenCloseButtonDelegate(zeroTable));
     zeroTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    zeroTable->setMinimumSize(100,200);
+    zeroTable->setMinimumSize(100, 200);
     zeroTable->verticalHeader()->setEnabled(true);
-    zeroTable->setSelectionBehavior( QAbstractItemView::SelectRows);
+    zeroTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     zeroTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(zeroTable, 50.0);
 
     QwtText vo("Voltage");
     voltagePlot = new QwtPlot(vo, zeroPlots);
-    voltagePlot->setAxisTitle( QwtAxis::YLeft, "Voltage [V]" );
+    voltagePlot->setAxisTitle(QwtAxis::YLeft, "Voltage [V]");
     vCurve = nullptr;
     configureTimeAxis(voltagePlot);
 
     QwtText cu("Current");
     currentPlot = new QwtPlot(cu, zeroPlots);
-    currentPlot->setAxisTitle( QwtAxis::YLeft, "Current [A]" );
+    currentPlot->setAxisTitle(QwtAxis::YLeft, "Current [A]");
     cCurve = nullptr;
     configureTimeAxis(currentPlot);
 
     QwtText po("Power");
     powerPlot = new QwtPlot(po, zeroPlots);
-    powerPlot->setAxisTitle( QwtAxis::YLeft, "Power [W]" );
+    powerPlot->setAxisTitle(QwtAxis::YLeft, "Power [W]");
     pCurve = nullptr;
     configureTimeAxis(powerPlot);
 
     QwtText freq("Frequency");
     frequencyPlot = new QwtPlot(freq, zeroPlots);
-    frequencyPlot->setAxisTitle( QwtAxis::YLeft, "Frequency [Hz]" );
+    frequencyPlot->setAxisTitle(QwtAxis::YLeft, "Frequency [Hz]");
     fCurve = nullptr;
     configureTimeAxis(frequencyPlot);
-
 
     auto overview = new QGridLayout(zeroPlots);
     overview->addWidget(voltagePlot, 0, 0);
@@ -120,116 +113,106 @@ ZeroLiveViewTab::ZeroLiveViewTab(QWidget* parent) : QWidget(parent),
     zeroPlots->setLayout(overview);
     zeroDetails->addTab(zeroPlots, tr("Overview"));
 
-
     zeroTrip->setEnabled(false);
-    connect(zeroTrip,&ZeroTripConfWidget::sendStatusMessage,
-            this, &ZeroLiveViewTab::sendStatusMessage);
+    connect(zeroTrip, &ZeroTripConfWidget::sendStatusMessage, this,
+            &ZeroLiveViewTab::sendStatusMessage);
 
-    connect(zeroTrip, &ZeroTripConfWidget::applyNewTripCurve,
-        [=](std::vector<QPointF> newTripCurve)
-        {
+    connect(
+        zeroTrip, &ZeroTripConfWidget::applyNewTripCurve, [=](std::vector<QPointF> newTripCurve) {
             auto tZeroIdx = zeroTable->model()->index(selectedRowIdx, 0);
-            zeroTable->model()->setData(tZeroIdx,
-                                        QVariant::fromValue(static_cast<void*>(&newTripCurve)),
-                                        zero::TripCurve);
-        }
-    );
+            zeroTable->model()->setData(
+                tZeroIdx, QVariant::fromValue(static_cast<void *>(&newTripCurve)), zero::TripCurve);
+        });
 
     zeroDetails->addTab(zeroTrip, tr("Trip Settings"));
-    
+
     mainLayout->addWidget(zeroDetails, 50.0);
-    
+
     setLayout(mainLayout);
-
-
 }
 
 ZeroLiveViewTab::~ZeroLiveViewTab()
 {
-    if (vCurve != nullptr)
-    {
+    if (vCurve != nullptr) {
         vCurve->detach();
         vCurve = nullptr;
     }
 
-    if (cCurve != nullptr)
-    {
+    if (cCurve != nullptr) {
         cCurve->detach();
         cCurve = nullptr;
     }
 
-    if (pCurve != nullptr)
-    {
+    if (pCurve != nullptr) {
         pCurve->detach();
         pCurve = nullptr;
     }
 
-    if (fCurve != nullptr)
-    {
+    if (fCurve != nullptr) {
         fCurve->detach();
         fCurve = nullptr;
     }
 }
 
-void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
+void ZeroLiveViewTab::setModel(ZeroLiveViewModel *model)
 {
     zeroTable->setModel(model);
 
-    connect(model, &ZeroLiveViewModel::sendStatusMessage,
-            this, &ZeroLiveViewTab::sendStatusMessage);
+    connect(model, &ZeroLiveViewModel::sendStatusMessage, this,
+            &ZeroLiveViewTab::sendStatusMessage);
 
-    connect(model, &ZeroLiveViewModel::rowsInserted, 
-            [=](const QModelIndex &parent, int first, int last)
-            {
-                for ( int i = first; i <= last; ++i )
-                {
-                    zeroTable->openPersistentEditor( model->index(i,1) );
+    connect(model, &ZeroLiveViewModel::rowsInserted,
+            [=](const QModelIndex &parent, int first, int last) {
+                for (int i = first; i <= last; ++i) {
+                    zeroTable->openPersistentEditor(model->index(i, 1));
                 }
             });
 
-    connect(zeroTable->selectionModel(), &QItemSelectionModel::selectionChanged, 
-            [=](const QItemSelection &selected, const QItemSelection &deselected)
-            {
+    connect(zeroTable->selectionModel(), &QItemSelectionModel::selectionChanged,
+            [=](const QItemSelection &selected, const QItemSelection &deselected) {
                 // unselecting a row or selecting new
                 selectedRowIdx = -1;
                 if (vCurve) vCurve->detach();
                 vCurve = nullptr;
-                
+
                 if (cCurve) cCurve->detach();
                 cCurve = nullptr;
-                
+
                 if (pCurve) pCurve->detach();
                 pCurve = nullptr;
-                
+
                 if (fCurve) fCurve->detach();
                 fCurve = nullptr;
 
                 zeroTrip->clear();
                 zeroTrip->setEnabled(false);
 
-            
-                if (selected.size() == 1)
-                {
+                if (selected.size() == 1) {
                     QModelIndex idx = selected.indexes().first();
                     selectedRowIdx = idx.row();
 
-                    vCurve = static_cast<QwtPlotCurve*>(idx.model()->data(idx, zero::VoltageSeries).value<void*>());
+                    vCurve = static_cast<QwtPlotCurve *>(
+                        idx.model()->data(idx, zero::VoltageSeries).value<void *>());
                     vCurve->attach(voltagePlot);
                     vCurve->show();
 
-                    cCurve = static_cast<QwtPlotCurve*>(idx.model()->data(idx, zero::CurrentSeries).value<void*>());
+                    cCurve = static_cast<QwtPlotCurve *>(
+                        idx.model()->data(idx, zero::CurrentSeries).value<void *>());
                     cCurve->attach(currentPlot);
                     cCurve->show();
-                    
-                    pCurve = static_cast<QwtPlotCurve*>(idx.model()->data(idx, zero::PowerSeries).value<void*>());
+
+                    pCurve = static_cast<QwtPlotCurve *>(
+                        idx.model()->data(idx, zero::PowerSeries).value<void *>());
                     pCurve->attach(powerPlot);
                     pCurve->show();
-                    
-                    fCurve = static_cast<QwtPlotCurve*>(idx.model()->data(idx, zero::FrequencySeries).value<void*>());
+
+                    fCurve = static_cast<QwtPlotCurve *>(
+                        idx.model()->data(idx, zero::FrequencySeries).value<void *>());
                     fCurve->attach(frequencyPlot);
                     fCurve->show();
-                    
-                    std::vector<QPointF> tVec(*(static_cast<std::vector<QPointF>*>(idx.model()->data(idx, zero::TripCurve).value<void*>())));
+
+                    std::vector<QPointF> tVec(*(static_cast<std::vector<QPointF> *>(
+                        idx.model()->data(idx, zero::TripCurve).value<void *>())));
 
                     zeroTrip->setCurve(tVec);
 
@@ -237,59 +220,51 @@ void ZeroLiveViewTab::setModel(ZeroLiveViewModel* model)
                     zeroTrip->setEnabled(has_trip);
                 }
                 replot();
-                    
             });
 
     // updating the realtime plots
     connect(model, &QAbstractItemModel::dataChanged,
-            [=](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles = QList<int>())
-            {
+            [=](const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                const QList<int> &roles = QList<int>()) {
                 bool display_update = false;
-                for (auto i = roles.constBegin(); i != roles.constEnd(); ++i)
-                {
-                    if (*i == Qt::DisplayRole)
-                    {
+                for (auto i = roles.constBegin(); i != roles.constEnd(); ++i) {
+                    if (*i == Qt::DisplayRole) {
                         display_update = true;
                         break;
                     }
                 }
-                
+
                 if (!display_update) return;
 
                 // check the selected row is part of the update
-                if (!(selectedRowIdx >= topLeft.row() &&
-                    selectedRowIdx <= bottomRight.row())) return;
+                if (!(selectedRowIdx >= topLeft.row() && selectedRowIdx <= bottomRight.row()))
+                    return;
 
                 replot();
-                
-            }
-        );
+            });
 
     // update the trip curve
     connect(model, &QAbstractItemModel::dataChanged,
-            [=](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles = QList<int>())
-            {
+            [=](const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                const QList<int> &roles = QList<int>()) {
                 bool display_update = false;
-                for (auto i = roles.constBegin(); i != roles.constEnd(); ++i)
-                {
-                    if (*i == zero::TripConfig)
-                    {
+                for (auto i = roles.constBegin(); i != roles.constEnd(); ++i) {
+                    if (*i == zero::TripConfig) {
                         display_update = true;
                         break;
                     }
                 }
-                
+
                 if (!display_update) return;
 
                 // check the selected row is part of the update
-                if (!(selectedRowIdx >= topLeft.row() &&
-                    selectedRowIdx <= bottomRight.row())) return;
+                if (!(selectedRowIdx >= topLeft.row() && selectedRowIdx <= bottomRight.row()))
+                    return;
 
-                                
-                std::vector<QPointF> tVec(*(static_cast<std::vector<QPointF>*>(topLeft.model()->data(topLeft, zero::TripCurve).value<void*>())));
+                std::vector<QPointF> tVec(*(static_cast<std::vector<QPointF> *>(
+                    topLeft.model()->data(topLeft, zero::TripCurve).value<void *>())));
                 zeroTrip->setCurve(tVec);
-            }
-        );
+            });
 }
 
 void ZeroLiveViewTab::replot()
@@ -300,7 +275,4 @@ void ZeroLiveViewTab::replot()
     frequencyPlot->replot();
 }
 
-
-
-
-} // end namespace
+}  // namespace zero

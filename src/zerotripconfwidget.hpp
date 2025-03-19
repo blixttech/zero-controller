@@ -1,54 +1,50 @@
 #pragma once
 
 #include <qtablewidget.h>
-#include <QWidget>
 
-#include <QTableWidget>
+#include <QComboBox>
 #include <QPointF>
 #include <QPushButton>
-#include <QComboBox>
-
+#include <QTableWidget>
+#include <QWidget>
 #include <QwtPlot>
 #include <QwtPlotCurve>
 
 #include "zerodatastream.hpp"
 
 namespace zero {
-	
+
 class ZeroTripConfWidget : public QWidget
 {
-	Q_OBJECT;
-		
-	public:
-		ZeroTripConfWidget(QWidget* parent = nullptr);
+    Q_OBJECT;
 
-	  void setCurve(std::vector<QPointF>& curve);
+public:
+    ZeroTripConfWidget(QWidget *parent = nullptr);
 
-		void clear();
-		
-    signals:
-	    void sendStatusMessage( const QString & message ); 
-			void applyNewTripCurve(std::vector<QPointF> curve);
+    void setCurve(std::vector<QPointF> &curve);
 
-	private:		
+    void clear();
 
-      QwtPlot*      tripPlot;
-      QwtPlotCurve  tCurve;
-      ZeroDataStream* customCurvePoints;
-      ZeroDataStream* tCurvePointsOriginal;
+signals:
+    void sendStatusMessage(const QString &message);
+    void applyNewTripCurve(std::vector<QPointF> curve);
 
-			QTableWidget* zeroTripTable;
-	    QComboBox *tripTypeBox;
-      
+private:
+    QwtPlot *tripPlot;
+    QwtPlotCurve tCurve;
+    ZeroDataStream *customCurvePoints;
+    ZeroDataStream *tCurvePointsOriginal;
 
-      bool isTripCurveValid(QTableWidget* zeroTable);
-      void updateTripCurvePlot(QTableWidget* zeroTable);
-      void addTripPoint(QTableWidget* zeroTable, double currentInA = 0.0, int timeInMs = 0);
+    QTableWidget *zeroTripTable;
+    QComboBox *tripTypeBox;
 
+    bool isTripCurveValid(QTableWidget *zeroTable);
+    void updateTripCurvePlot(QTableWidget *zeroTable);
+    void addTripPoint(QTableWidget *zeroTable, double currentInA = 0.0, int timeInMs = 0);
 
-      QWidget* createStandardTripCurveWiget(int trip_type, QwtPlotCurve* curve);
-      QWidget* createCustomTripCurveWidget(QwtPlotCurve* curve);
-  
-      void createTripSettingsWidget();        
+    QWidget *createStandardTripCurveWiget(int trip_type, QwtPlotCurve *curve);
+    QWidget *createCustomTripCurveWidget(QwtPlotCurve *curve);
+
+    void createTripSettingsWidget();
 };
-}
+}  // namespace zero
