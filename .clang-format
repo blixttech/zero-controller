@@ -4,6 +4,6 @@ BreakBeforeBraces: Mozilla
 ColumnLimit: 100
 DerivePointerAlignment: false
 IndentWidth: 4
-PointerAlignment: Right
+PointerAlignment: Left
 TabWidth: 4
 UseTab: Never

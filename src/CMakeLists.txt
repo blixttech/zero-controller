@@ -1,3 +1,4 @@
+#// clang-format off
 INCLUDE (CheckIncludeFiles)
 
 #protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS zc_messages.proto)
@@ -29,6 +30,7 @@ add_executable(zero-controller
     ${CMAKE_SOURCE_DIR}/resources/icons/icons.qrc
     zc_messages.proto
     zerotripconfwidget.cpp
+    zerogeneralconfwidget.cpp
 )
 
 protobuf_generate(
@@ -45,14 +47,14 @@ set_property(TARGET zero-controller PROPERTY CMAKE_INCLUDE_CURRENT_DIR ON)
 set_property(TARGET zero-controller PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 
-target_include_directories(zero-controller 
-                            PUBLIC 
+target_include_directories(zero-controller
+                            PUBLIC
                             ${Protobuf_INCLUDE_DIRS}
                             ${CMAKE_CURRENT_BINARY_DIR}
                            )
 
-target_include_directories(zero-controller 
-                            PRIVATE 
+target_include_directories(zero-controller
+                            PRIVATE
                             ${CMAKE_CURRENT_SOURCE_DIR}
                             ${Qt6Core_INCLUDE_DIRS}
                             ${Qt6Network_INCLUDE_DIRS}
@@ -97,7 +99,6 @@ set_target_properties(zero-controller PROPERTIES
     WIN32_EXECUTABLE ON
 )
 
-install(TARGETS zero-controller 
+install(TARGETS zero-controller
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-

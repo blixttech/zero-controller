@@ -1,19 +1,17 @@
 #include "zerolist.hpp"
 
+#include <qglobal.h>
+#include <qobject.h>
+
+#include "zeroproxy.hpp"
 
 namespace zero {
 
-ZeroList::ZeroList(QObject *parent) : QObject(parent),
-    zeros_(), zerosVec_()
-{
-}
+ZeroList::ZeroList(QObject* parent) : QObject(parent), zeros_(), zerosVec_() {}
 
-bool ZeroList::contains(const QString& uuid) const
-{
-    return (zeros_.count(uuid) != 0);
-}
+bool ZeroList::contains(const QString& uuid) const { return (zeros_.count(uuid) != 0); }
 
-std::shared_ptr<ZeroProxy> const  ZeroList::get(const QString& uuid) const
+std::shared_ptr<ZeroProxy> const ZeroList::get(const QString& uuid) const
 {
     if (!contains(uuid)) return std::shared_ptr<ZeroProxy>();
 
@@ -34,48 +32,41 @@ void ZeroList::erase(const QString& uuid)
 
 void ZeroList::insert(std::shared_ptr<ZeroProxy> zero)
 {
-    if (zeros_.count(zero->uuid()) != 0)
-        return;
+    if (zeros_.count(zero->uuid()) != 0) return;
 
     emit beforeAddingZero(zerosVec_.size());
 
     zerosVec_.push_back(zero);
 
-    uint32_t zeroIndex = zerosVec_.size()-1;
+    uint32_t zeroIndex = zerosVec_.size() - 1;
     zeros_.insert({zero->uuid(), zeroIndex});
 
     emit zeroAdded(zeroIndex);
 
-    connect(zero.get(), &ZeroProxy::statusUpdated,
-            [=]() 
-            {
-                notifyOfZeroUpdate(zero->uuid());
-            }
-    );
+    connect(zero.get(), &ZeroProxy::StatusUpdated, [=]() { notifyOfZeroUpdate(zero->uuid()); });
 
-    connect(zero.get(), &ZeroProxy::configUpdated,
-            [=]() 
-            {
-                notifyOfZeroConfigUpdate(zero->uuid());
-            }
-    );
-        
-    connect(zero.get(), &ZeroProxy::stopped,
-            [=]() 
-            {
-                qDebug() << "Erasing stopped " << zero->uuid();
-                erase(zero->uuid());
-            }
-    );
+    connect(zero.get(), &ZeroProxy::ParameterChanged,
+            [=](const QString& uuid, ZeroProxy::Parameter parameter) {
+                if (zeros_.count(uuid) == 0) {
+                    qWarning() << "Received unknown uuid " << uuid << " in ParameterChange signal";
+                    return;
+                }
 
-    connect(zero.get(), &ZeroProxy::sendStatusMessage,
-            this, &ZeroList::sendStatusMessage);
+                auto index = zeros_.at(uuid);
+                qDebug() << "UUID " << uuid << " at row " << index << " with paramater "
+                         << static_cast<int>(parameter);
+                emit ZeroParameterChanged(index, parameter);
+            });
+
+    connect(zero.get(), &ZeroProxy::Stop, [=]() {
+        qDebug() << "Erasing stopped " << zero->uuid();
+        erase(zero->uuid());
+    });
+
+    connect(zero.get(), &ZeroProxy::SendStatusMessage, this, &ZeroList::sendStatusMessage);
 }
 
-const ZeroVec& ZeroList::zeros() const
-{
-    return zerosVec_;
-}
+const ZeroVec& ZeroList::zeros() const { return zerosVec_; }
 
 void ZeroList::notifyOfZeroUpdate(const QString& uuid)
 {
@@ -84,23 +75,14 @@ void ZeroList::notifyOfZeroUpdate(const QString& uuid)
     auto index = zeros_.at(uuid);
     emit zeroUpdated(index);
 }
-    
-void ZeroList::notifyOfZeroConfigUpdate(const QString& uuid)
-{
-    if (zeros_.count(uuid) == 0) return;
-
-    auto index = zeros_.at(uuid);
-    emit zeroConfigUpdated(index);
-}
 
 void ZeroList::clear()
 {
     qDebug() << "List size: " << zerosVec_.size();
 
-    foreach (auto zero, zerosVec_) 
-    {
+    foreach (auto zero, zerosVec_) {
         zero->stop();
     }
 }
 
-} //end of namespace
+}  // namespace zero

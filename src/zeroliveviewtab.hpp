@@ -1,13 +1,14 @@
 #pragma once
-#include <QTabWidget>
-#include <QWidget>
-#include <QTableWidget>
-#include <QPushButton>
+#include <qabstractitemmodel.h>
+
 #include <QComboBox>
+#include <QPushButton>
+#include <QTabWidget>
+#include <QTableWidget>
+#include <QWidget>
 #include <QwtPlot>
 
-#include "smp/smp.hpp"
-#include "zerodatastream.hpp"
+#include "zerogeneralconfwidget.hpp"
 #include "zeroliveviewmodel.hpp"
 #include "zerotripconfwidget.hpp"
 
@@ -15,38 +16,41 @@ namespace zero {
 
 class ZeroLiveViewTab : public QWidget
 {
-        Q_OBJECT
-    public:
-        ZeroLiveViewTab(QWidget* parent = nullptr);
-        ~ZeroLiveViewTab();
+    Q_OBJECT
+public:
+    ZeroLiveViewTab(QWidget* parent = nullptr);
+    ~ZeroLiveViewTab();
 
-        void setModel(ZeroLiveViewModel* model);
+    void setModel(ZeroLiveViewModel* model);
 
-        signals:
-            void sendStatusMessage( const QString & message ); 
-    private: 
-        QTableView*   zeroTable;
+signals:
+    void sendStatusMessage(const QString& message);
 
-        QTabWidget*   zeroDetails;
+private:
+    QTableView* zeroTable;
 
-        QWidget*      zeroPlots;
-        QwtPlot*      voltagePlot;
-        QwtPlotCurve* vCurve;
-        
-        QwtPlot*      currentPlot;
-        QwtPlotCurve* cCurve;
-        
-        QwtPlot*      powerPlot;
-        QwtPlotCurve* pCurve;
-        
-        QwtPlot*      frequencyPlot;
-        QwtPlotCurve* fCurve;
+    QTabWidget* zeroDetails;
 
-        int selectedRowIdx;
-        ZeroTripConfWidget*      zeroTrip;
+    QWidget* zeroPlots;
+    QwtPlot* voltagePlot;
+    QwtPlotCurve* vCurve;
 
-        void replot();
-         
+    QwtPlot* currentPlot;
+    QwtPlotCurve* cCurve;
+
+    QwtPlot* powerPlot;
+    QwtPlotCurve* pCurve;
+
+    QwtPlot* frequencyPlot;
+    QwtPlotCurve* fCurve;
+
+    int selectedRowIdx;
+    ZeroTripConfWidget* zeroTrip;
+    ZeroGeneralConfWidget* zeroGConf;
+
+    void replot();
+
+    void loadGConfFromModel(const QModelIndex& idx);
 };
 
-} // end namespace
+}  // namespace zero
