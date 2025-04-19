@@ -1,3 +1,5 @@
+#// clang-format off
+
 cmake_minimum_required(VERSION 3.20)
 
 project (zero-controller CXX)
@@ -16,7 +18,7 @@ if(NOT SET_UP_CONFIGURATIONS_DONE)
     # Also no reason mess with CMAKE_BUILD_TYPE if it's a multiconfig generator.
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(isMultiConfig)
-        set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE) 
+        set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
     else()
         if(NOT CMAKE_BUILD_TYPE)
             message(STATUS "Defaulting to release build.")
@@ -42,7 +44,15 @@ find_package(Qt6 REQUIRED COMPONENTS Svg)
 find_package(Qt6 REQUIRED COMPONENTS Coap)
 find_package(Qwt REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Protobuf REQUIRED)
+if (MSVC)
+    message( "running MSVC workflow" )
+    set(protobuf_MODULE_COMPATIBLE TRUE)
+    find_package(Protobuf CONFIG REQUIRED)
+else()
+    find_package(Protobuf REQUIRED)
+endif()
+
+message("Protobuf include dirs: ${Protobuf_INCLUDE_DIRS}")
 
 qt_standard_project_setup()
 

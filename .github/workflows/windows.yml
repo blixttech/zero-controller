@@ -1,3 +1,5 @@
+#// clang-format off
+
 name: WINDOWS
 
 on: [push, pull_request]
@@ -15,13 +17,39 @@ jobs:
 
         - name: Install stack and wget
           run: |
-            choco install wget --no-progress
+            choco install wget -y --no-progress
+            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y --no-progress
+            choco install ninja -y --no-progress
 
-        - name: Install protobuf
-          shell: cmd
+        - name: Build protobuf and abseil from source
+          if: steps.cache-protobuf.outputs.cache-hit != 'true'
           run: |
-            vcpkg install protobuf protobuf:x64-windows
-          
+            wget https://github.com/protocolbuffers/protobuf/releases/download/v26.0/protobuf-26.0.zip
+            unzip protobuf-26.0.zip
+            move protobuf-26.0 protobuf
+
+            wget https://github.com/abseil/abseil-cpp/archive/refs/tags/20250127.1.zip
+            unzip 20250127.1.zip
+            move abseil-cpp-20250127.1\* protobuf\third_party\abseil-cpp\
+
+            cd protobuf\third_party\abseil-cpp
+            mkdir .build
+            cd .build
+            cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DABSL_BUILD_TESTING=OFF -DABSL_USE_GOOGLETEST_HEAD=OFF -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX="../../../install"
+            cmake --build . --config Release
+            cmake --install . --config Release
+
+            cd ${{ github.workspace }}\protobuf
+            mkdir .build
+            cd .build
+            cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_FIND_DEBUG_MODE=OFF -DBUILD_DEPS=ON -Dprotobuf_ABSL_PROVIDER=package -Dabsl_DIR="install/lib/cmake/absl" -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_INSTALL_PREFIX="../install"
+            cmake --build . --config Release
+            cmake --install . --config Release
+
+        - name: Add protobuf to PATH
+          run: |
+            echo "${{ github.workspace }}\protobuf\install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
         - name: Install Qt6
           shell: pwsh
           run: |
@@ -31,10 +59,14 @@ jobs:
             echo "$Qt6_DIR/bin/" >> $env:GITHUB_PATH
             echo DONE
 
+        # for debugging, add -DCMAKE_FIND_DEBUG_MODE=1
         - name: Build
-          shell: cmd
           run: |
-            build.bat Release
+            mkdir .build
+            cd .build
+            cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${{ github.workspace }}\protobuf\install" -DCMAKE_INSTALL_PREFIX="../artifact/Release"
+            cmake --build . --config Release
+            cmake --install . --config Release
 
         - name: Create Zip Archive
           shell: cmd

@@ -89,7 +89,7 @@ target_link_libraries(zero-controller Qt6::Svg)
 target_link_libraries(zero-controller Qt6::Coap)
 target_link_libraries(zero-controller Qwt::Qwt)
 target_link_libraries(zero-controller ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(zero-controller ${Protobuf_LIBRARIES})
+target_link_libraries(zero-controller protobuf::libprotobuf)
 
 if(UNIX)
 include(GNUInstallDirs)
