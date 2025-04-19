@@ -55,6 +55,7 @@ jobs:
           if: steps.cache-protobuf.outputs.cache-hit != 'true'
           run: |
             wget https://github.com/protocolbuffers/protobuf/releases/download/v26.0/protobuf-26.0.zip
+            unzip protobuf-26.0.zip
             cd protobuf-26.0
             mkdir .build
             cd .build
